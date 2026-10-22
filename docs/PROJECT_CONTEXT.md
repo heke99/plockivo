@@ -16,7 +16,7 @@ Produkt: white label B2B-självskanning för bemannade butiker. Källa: [masterp
 
 GitHub: heke99/plockivo, ursprungligen tomt **publikt** repo. Lokal rot är API-projektet. Webbens separata checkout heter plockivo-web; GitHub-repot heke99/plockivo-web skapades av produktägaren och webb 0.2.0 är publicerad där. Ingen monorepo eller relativ import mellan projekt används.
 
-Supabase: plockivo, projekt cqznytuyutrqenbbyczc, PostgreSQL 17, region eu-north-1. Tabellen var tom före uppdraget. Miljön behandlas som enbart syntetisk utveckling; inga verkliga handlare är provisionerade. Migrationer har tillämpats där och rolltestats. Vercel är beslutad drift, inte provisionerad eller driftsatt i denna leverans. Railway används inte.
+Supabase: plockivo, projekt cqznytuyutrqenbbyczc, PostgreSQL 17, region eu-north-1. Tabellen var tom före uppdraget. Miljön behandlas som enbart syntetisk utveckling; inga verkliga handlare är provisionerade. Migrationer har tillämpats där och rolltestats. Separata Vercelprojekt plockivo-api och plockivo-web är driftsatta i Div3rsa, arn1, Node 24, med Deployment Protection. Verksamhetsmiljön är syntetisk test; worker och verklig pilot är inte aktiverade. Railway används inte.
 
 ## Ägarskap
 

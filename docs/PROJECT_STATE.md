@@ -2,7 +2,7 @@
 
 ## Mål och faktisk leverans
 
-Påbörja Plockivo enligt masterplan v2.2 och startkit 3.0.0 med DEL-3603:s sammanhängande grundflöde. **Inte pilotklart.** API och separat webb är implementerade. Produktägaren har uttryckligen godkänt offentlig publicering; API-grunden finns i heke99/plockivo. Webbens separata repo heke99/plockivo-web är skapat av produktägaren och version 0.2.0 publicerad. Ingen Verceldeploy eller DNS-ändring är genomförd.
+Påbörja Plockivo enligt masterplan v2.2 och startkit 3.0.0 med DEL-3603:s sammanhängande grundflöde. **Inte pilotklart.** API och separat webb är implementerade. Produktägaren har uttryckligen godkänt offentlig publicering; API-grunden finns i heke99/plockivo. Webbens separata repo heke99/plockivo-web är skapat av produktägaren och version 0.2.0 publicerad. Skyddad Vercel-testdrift är genomförd: https://plockivo-web.vercel.app och https://plockivo-api.vercel.app. Inga egna domäner eller DNS-ändringar.
 
 ## Verifierat
 
@@ -23,7 +23,7 @@ Supabase cqznytuyutrqenbbyczc, utveckling med endast syntetiska testdata. Migrat
 
 1. [CARTS-002](work/CARTS-002.md) verifierat: ägd serverkorg, versionskontroll, en quote per revision, atomisk invalidation och ny korg efter order. SQL-rolltester, samtidiga ändringar, slutlig browseromkörning och GitHub CI passerar. API-kodcommit 0dd58b9; se verifieringsrapporten.
 2. API och webb 0.2.0 är publicerade i heke99/plockivo respektive heke99/plockivo-web. Webbens källkod motsvarar kodcommit abbb0ed381d2473ec0125e0dac0dc2d5ed0df1f1; webbens GitHub CI 39857451898 PASS.
-3. Provisionera separata Vercelprojekt och testmiljöer; konfigurera worker och verifiera Workflow-recovery. Webb får inga workerhemligheter.
+3. [DEPLOY-003](work/DEPLOY-003.md) PASS för det begränsade driftsatta testköpet. Worker BLOCKED: SUPABASE_SECRET_KEY och CRON_SECRET saknas i API-projektet; cron är avstängt. Konfigurera dessa endast server-side och verifiera Workflow-recovery innan cron aktiveras.
 4. Fortsätt med inbjudan/MFA, handlarkonfiguration och verklig ERP-kapacitetsprofil. Därefter utlämningsanspråk, delutlämning/annullering, ekonomisk radallokering och returer.
 
 ## Blockerare före verkliga köp

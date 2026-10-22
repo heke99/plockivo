@@ -22,10 +22,14 @@ Plattformsbolag/personuppgiftsansvarig, avtal, laglig grund, gallring, rättighe
 
 ## Jobb och integrationer
 
-POST confirm committar outbox före svar. `/internal/outbox` kräver CRON_SECRET och worker key; cron hittar högst 20 köade testjobb och startar Workflows med endast jobb-ID. Databasens worker låser jobbet, skapar högst ett JSON-dokument och avslutar i samma transaktion. Dubbla Workflow-starter kan inte skapa dubbla dokument. Notification går till manual_review eftersom ingen leverantör finns; den markeras aldrig skickad. unknown/manuell handläggning återköas inte automatiskt. Verkliga effekter behöver senare inbox, provider-idempotens, avstämning och claim/fencing innan de får aktiveras.
+POST confirm committar outbox före svar. `/internal/outbox` kräver CRON_SECRET och worker key; När cron senare aktiveras hittar den högst 20 köade testjobb och startar Workflows med endast jobb-ID. Databasens worker låser jobbet, skapar högst ett JSON-dokument och avslutar i samma transaktion. Dubbla Workflow-starter kan inte skapa dubbla dokument. Notification går till manual_review eftersom ingen leverantör finns; den markeras aldrig skickad. unknown/manuell handläggning återköas inte automatiskt. Verkliga effekter behöver senare inbox, provider-idempotens, avstämning och claim/fencing innan de får aktiveras.
 
-Worker-miljö saknar secret key i denna körning: Workflow-SDK:t bygger men verklig Workflow-exekvering är inte verifierad. Regionsönskemål arn1 i Vercel-konfig är inte ett bevis på Workflows lagringsregion. Kontovillkor, retention och körregion måste kontrolleras vid provisionering.
+Worker-miljö saknar secret key: cron är uttryckligen avstängt i vercel.json. Workflow-SDK:t bygger och API är driftsatt, men verklig Workflow-exekvering är inte verifierad. Regionsönskemål arn1 i Vercel-konfig är inte ett bevis på Workflows lagringsregion. Kontovillkor, retention och körregion måste kontrolleras vid provisionering.
 
 ## Före pilot
 
 Masterplanens kapitel 38 är den fullständiga startkontrollen. Verkliga köp ska förbli avstängda tills ERP-pris/kredit, inventerad exponering, utlämning och mängdanspråk, fakturering/retur, MFA, juridik, telefonprov, backup, incidentövning och relevant E2E är verifierade. Återställning får inte återaktivera tidigare spärrar eller engångsbevis. Ingen återställningsövning är genomförd här.
+
+## Driftsatt testmiljö
+
+Se [DEPLOY-003](work/DEPLOY-003.md) för projekt, kodcommits, deployments, verifiering och städning. Webbens server använder en dedikerad API-automationhemlighet för Vercels skydd; person-JWT och mandatkontroll kvarstår. Trusted Sources-konfiguration svarade 404. Detta är en testkoppling, ingen öppning av API för anonyma verksamhetsanrop.

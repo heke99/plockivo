@@ -2,7 +2,7 @@
 
 ## Utlåtande
 
-**RED för verklig pilot.** Ett sammanhängande testflöde är implementerat och systemverifierat för de gränser som anges nedan. Saknade P0-flöden får inte beskrivas som färdiga eller driftsatta. Ingen Vercelrelease har gjorts.
+**RED för verklig pilot.** Ett sammanhängande testflöde är implementerat och systemverifierat för de gränser som anges nedan. Saknade P0-flöden får inte beskrivas som färdiga eller driftsatta. Skyddad Vercel-testdrift är verifierad för det begränsade testköpsflödet; full pilot är inte godkänd.
 
 Miljö: lokala produktionsbyggen av API och webb, Supabase utvecklingsprojekt cqznytuyutrqenbbyczc, syntetiska handlare och testidentiteter. API-kontrakt 0.2.0. Engineering Startkit 3.0.0. Releasecommits registreras vid avslut i leveransmanifestet.
 
@@ -50,4 +50,8 @@ Migration 20261022210808 tillämpad i utvecklingsprojektet. tests/carts.sql PASS
 
 ## Separat webbpublicering
 
-Webbens kodcommit abbb0ed381d2473ec0125e0dac0dc2d5ed0df1f1 i heke99/plockivo-web motsvarar exakt lokalt testat Git-tree b16614bef95f048d84696700eba2a8c5b7166d87. [Webb-CI 39857451898](https://github.com/heke99/plockivo-web/actions/runs/39857451898) PASS: npm ci, standardkontroll, typkontroll, 4 tester och produktionsbygge. Ingen Verceldeploy. Endast dokumentation uppdateras efter denna kodcommit.
+Webbens kodcommit abbb0ed381d2473ec0125e0dac0dc2d5ed0df1f1 i heke99/plockivo-web motsvarar exakt lokalt testat Git-tree b16614bef95f048d84696700eba2a8c5b7166d87. [Webb-CI 39857451898](https://github.com/heke99/plockivo-web/actions/runs/39857451898) PASS: npm ci, standardkontroll, typkontroll, 4 tester och produktionsbygge. Vercel-testdrift tillkom i DEPLOY-003. Endast dokumentation uppdateras efter denna kodcommit.
+
+## Vercel-testdrift
+
+API b245c5d och webb 9356732 driftsatta i separata Div3rsa-projekt, Node 24, arn1, med skydd kvar. HTTP och browser hela vägen till DB PASS, inklusive sparad korg, testorder, replay, Secure HttpOnly host-only cookies, logout/401 och mobil. Tre avsiktliga testorder gav 75000 öre exponering/projektåtagande och sex köade outboxjobb. Worker avstängd; inga externa leveranser påstås. Testdata städade med readback 0. Kvalitetskontroller och båda reponas CI PASS. Se API-repots docs/work/DEPLOY-003.md för komplett scenariomatris och begränsningar.
