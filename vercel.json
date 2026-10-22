@@ -1,1 +1,6 @@
-{"regions":["arn1"],"crons":[{"path":"/internal/outbox","schedule":"*/5 * * * *"}]}
+{
+  "regions": [
+    "arn1"
+  ],
+  "crons": []
+}
