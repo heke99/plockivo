@@ -1,0 +1,101 @@
+{
+  "name": "Engineering Startkit",
+  "version": "3.0.0",
+  "date": "2026-10-22",
+  "archive_root": "engineering-startkit",
+  "excluded_from_checksums": [
+    "STARTKIT_MANIFEST.json"
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "size_bytes": 5480,
+      "sha256": "801e4a494a807bc8a03c2d3ab502c536e9902308c48966327aaa085a399e21ec"
+    },
+    {
+      "path": "README_START.md",
+      "size_bytes": 6268,
+      "sha256": "4efe84b8e6afcae780bd2d695cb5bb01e061bd27d7be76e631d626fe19c4469b"
+    },
+    {
+      "path": "START_PROMPT.txt",
+      "size_bytes": 1796,
+      "sha256": "caebffc74c06cfa7e22ed943efbae176e10a02c36949f194c4583b61f10e7ede"
+    },
+    {
+      "path": "VALIDATION_REPORT.md",
+      "size_bytes": 2938,
+      "sha256": "6035109b87d7bca258430530eef2b3d799d7079390d5b517ffa1e63b7817acca"
+    },
+    {
+      "path": "VERSION",
+      "size_bytes": 6,
+      "sha256": "2985be8b28d3ade858e8d8fb4bc22f565b1bf6020dff982dce141f7721b9999c"
+    },
+    {
+      "path": "docs/CHANGELOG.md",
+      "size_bytes": 1027,
+      "sha256": "f9be619c6e70f5c17c49210e1a29bfbe6972e68f33915c88a61f1a80b65eac76"
+    },
+    {
+      "path": "docs/CI_INTEGRATION.md",
+      "size_bytes": 5794,
+      "sha256": "0759608234bc6d0e2892e7fd0c2ccfb6b55854cf8e6033fa9a695364b1845bd1"
+    },
+    {
+      "path": "docs/DECISIONS.template.md",
+      "size_bytes": 2113,
+      "sha256": "8acffda490ff06809e6075708899303e2eb411af6c76f2e28e07cbf16d1c3348"
+    },
+    {
+      "path": "docs/ENGINEERING_STANDARD.md",
+      "size_bytes": 87377,
+      "sha256": "bde9abc54ad7e066b6a0bbc7868844143f4383863089bcb20281e20a641c87a7"
+    },
+    {
+      "path": "docs/PRODUCT_REQUIREMENTS.template.md",
+      "size_bytes": 7286,
+      "sha256": "a5de80ee0929764273c813ff0c851aa96d2ea77b31896ec095c4715ad63b9d0b"
+    },
+    {
+      "path": "docs/PROJECT_CONTEXT.template.md",
+      "size_bytes": 4673,
+      "sha256": "dab0319fa84e652916bcda98e0441d7f4285fbdb25954e091c3a4bce31fe250e"
+    },
+    {
+      "path": "docs/PROJECT_PROFILES.md",
+      "size_bytes": 19732,
+      "sha256": "7f08f13c8be37f3ec41c16dd79ef3cc98ce2fd156d9a8f5a6d4e800928c92f17"
+    },
+    {
+      "path": "docs/PROJECT_STATE.template.md",
+      "size_bytes": 2517,
+      "sha256": "c855c1d7f252b0e66432d1d115c42386fa5d7ac69c62e03d9f5017b08aa688f6"
+    },
+    {
+      "path": "docs/SKILLS_CATALOG.md",
+      "size_bytes": 14714,
+      "sha256": "7fb8b39c838326803aa1be231aa03ab6a59924ba3212eb69ed8bd14d336c5562"
+    },
+    {
+      "path": "docs/START_HERE.md",
+      "size_bytes": 6740,
+      "sha256": "bd61df983d235be7501e427e533103b87d885f9eb8d6a4751564683a8c5e941d"
+    },
+    {
+      "path": "docs/WORK_ITEM.template.md",
+      "size_bytes": 6656,
+      "sha256": "7a71f4fde3d63b2b38eae06f660a236f6e3fc07ca6670c28255f9a4c35870fd7"
+    },
+    {
+      "path": "tools/engineering/bootstrap.py",
+      "size_bytes": 8163,
+      "sha256": "b3f0c2e94e172839b0cad2348daac76f0b0675bb82e7f3de8c0dd00946d6d4d6"
+    },
+    {
+      "path": "tools/engineering/check_standard.py",
+      "size_bytes": 10190,
+      "sha256": "a6251ba6fb34fdace4d1a5937ab78894c9126615c96e77c9809c1c65edffee55"
+    }
+  ]
+}

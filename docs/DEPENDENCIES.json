@@ -1,0 +1,48 @@
+{
+  "ported_code": [],
+  "notes": "No Medusa, Casbin, Vendure, ERPNext or ZXing source copied. Use locked libraries, retain upstream licenses in node_modules/distribution.",
+  "dependencies": [
+    {
+      "name": "@supabase/supabase-js",
+      "version": "2.118.0",
+      "license": "MIT",
+      "source": "https://www.npmjs.com/package/@supabase/supabase-js/v/2.118.0",
+      "purpose": "verified identity and database transport"
+    },
+    {
+      "name": "next",
+      "version": "16.4.2",
+      "license": "MIT",
+      "source": "https://www.npmjs.com/package/next/v/16.4.2",
+      "purpose": "application runtime and validation"
+    },
+    {
+      "name": "react",
+      "version": "19.2.0",
+      "license": "MIT",
+      "source": "https://www.npmjs.com/package/react/v/19.2.0",
+      "purpose": "application runtime and validation"
+    },
+    {
+      "name": "react-dom",
+      "version": "19.2.0",
+      "license": "MIT",
+      "source": "https://www.npmjs.com/package/react-dom/v/19.2.0",
+      "purpose": "application runtime and validation"
+    },
+    {
+      "name": "workflow",
+      "version": "5.2.3",
+      "license": "Apache-2.0",
+      "source": "https://www.npmjs.com/package/workflow/v/5.2.3",
+      "purpose": "durable job SDK"
+    },
+    {
+      "name": "zod",
+      "version": "4.1.12",
+      "license": "MIT",
+      "source": "https://www.npmjs.com/package/zod/v/4.1.12",
+      "purpose": "application runtime and validation"
+    }
+  ]
+}

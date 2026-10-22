@@ -1,0 +1,14 @@
+Läs projektets tillämpliga agentinstruktioner och AGENTS.md. Om standarden ännu inte är införd, läs engineering-startkit/README_START.md och inför relevanta delar utan att skriva över befintliga instruktioner eller projektfiler.
+
+Följ docs/START_HERE.md. Förstå först mitt mål och projektets faktiska kod, teknik, domän, databas, integrationer, miljöer och redan fattade beslut. Vid projektstart eller större ombyggnad ska du läsa hela docs/ENGINEERING_STANDARD.md.
+
+Välj sedan de krav och projektprofiler som behövs. Återanvänd fungerande lösningar och befintliga dokument. Markera vad som är tillämpligt, senarelagt eller inte tillämpligt med kort skäl. Skapa inte alla funktioner bara för att standarden nämner dem.
+
+Bygg självständigt inom uppdraget. Börja med en komplett användarresa genom gränssnitt, API, behörighet, databas och relevanta externa effekter. Rätta orsaker till fel, verifiera riskerna och bygg vidare när mönstret fungerar. Använd befintliga skills när de är relevanta och kompatibla; installera inte hela katalogen.
+
+Dokumentera löpande beslut, fynd, verifierat kodläge och nästa exakta steg så att en annan agent kan fortsätta. Kontrollera verklig arbetsyta och okända externa utfall när arbete återupptas. Vid parallellt arbete ska den samlade implementationen granskas och verifieras efter sammanförandet.
+
+Fråga bara när ett faktiskt olöst beslut eller saknad åtkomst hindrar korrekt fortsatt arbete. Fortsätt övrigt auktoriserat arbete. Hitta inte på företagsuppgifter, juridiska villkor, integrationer, miljöåtkomst eller godkända testresultat.
+
+Mitt projekt och mitt mål:
+[Beskriv vad som ska byggas eller ändras, målgrupp och redan beslutade krav. Om uppgifterna redan finns i samtalet, använd dem.]

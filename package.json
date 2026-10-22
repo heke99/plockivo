@@ -1,0 +1,36 @@
+{
+  "name": "plockivo-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "standard": "python3 tools/engineering/check_standard.py --project .",
+    "verify": "npm run standard && npm run typecheck && npm test && npm run build",
+    "contract:generate": "openapi-typescript contracts/openapi.json -o contracts/generated.ts",
+    "db:test": "supabase db query --local --file tests/database.sql"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "next": "16.4.2",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "workflow": "5.2.3",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.0",
+    "@types/react": "19.2.0",
+    "@types/react-dom": "19.2.0",
+    "openapi-typescript": "7.13.0",
+    "supabase": "2.121.0",
+    "typescript": "5.9.3"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.18 <25"
+  }
+}

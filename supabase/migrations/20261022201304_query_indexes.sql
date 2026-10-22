@@ -1,0 +1,20 @@
+-- Index tenant access paths, referential checks and durable outbox recovery.
+create index memberships_tenant_id_customer_account_id_project_id_idx on public.memberships(tenant_id,customer_account_id,project_id);
+create index memberships_tenant_id_store_id_idx on public.memberships(tenant_id,store_id);
+create index orders_tenant_id_customer_account_id_idx on public.orders(tenant_id,customer_account_id);
+create index orders_tenant_id_purchase_intent_id_idx on public.orders(tenant_id,purchase_intent_id);
+create index orders_tenant_id_store_id_idx on public.orders(tenant_id,store_id);
+create index orders_actor_id_idx on public.orders(actor_id);
+create index order_lines_tenant_id_order_id_idx on public.order_lines(tenant_id,order_id);
+create index order_lines_tenant_id_product_id_idx on public.order_lines(tenant_id,product_id);
+create index purchase_intents_tenant_id_customer_account_id_project_id_idx on public.purchase_intents(tenant_id,customer_account_id,project_id);
+create index purchase_intents_tenant_id_store_id_idx on public.purchase_intents(tenant_id,store_id);
+create index product_barcodes_tenant_id_product_id_idx on public.product_barcodes(tenant_id,product_id);
+create index approvals_tenant_id_purchase_intent_id_idx on public.approvals(tenant_id,purchase_intent_id);
+create index approvals_actor_id_idx on public.approvals(actor_id);
+create index documents_tenant_id_order_id_idx on public.documents(tenant_id,order_id);
+create index credit_reservations_tenant_id_order_id_idx on private.credit_reservations(tenant_id,order_id);
+create index outbox_tenant_id_order_id_idx on private.outbox(tenant_id,order_id);
+create index outbox_status_created_at_idx on private.outbox(status,created_at);
+create index test_prices_tenant_id_product_id_idx on private.test_prices(tenant_id,product_id);
+create index audit_events_tenant_id_created_at_idx on private.audit_events(tenant_id,created_at);

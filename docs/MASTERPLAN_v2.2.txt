@@ -1,0 +1,1557 @@
+Masterplan för Plockivo B2B självskanning och företagsköp
+Version 2.2
+Datum 22 oktober 2026
+Mottagare Produktägare utvecklingsagenter tekniskt ansvariga och pilotpartner
+Plockivo är en gemensam produkt som låter handlare och grossister erbjuda sina företagskunder självskanning i bemannad butik. Vald huvuddomän är plockivo.com. Kunden väljer företag och projekt, skannar varor och genomför ett fakturaköp inom sitt mandat. Handlaren kontrollerar kundkonto, kredit, varor och utlämning. Order, följesedel, fakturaunderlag och korrigeringar ska kunna följas på radnivå.
+Planen är specifikationen för produkten och dess leveranser. Varje kapitel anger vad som ska byggas, vilka regler som ska gälla och vilket resultat som ska visas innan funktionen räknas som verifierad. Den första ekonomiska integrationen använder handlarens befintliga affärssystem som fakturakälla. Två fristående kodrepon och PWA per handlare är fasta produktval. Beslutad drift är Vercel för webb och API, Supabase för PostgreSQL, Auth och privat Storage samt Vercel Workflows för beständig bakgrundsbearbetning. Railway ingår inte. Plockivo är plattformsnamnet; varje handlares PWA använder handlarens godkända namn och profil.
+
+Innehåll
+1  Så används masterplanen
+2  Produktmål och ansvariga parter
+3  Fasta produktval och tekniska arbetsbeslut
+4  Pilotens omfattning och avgränsningar
+5  Roller ansvar och delegering
+6  Gränssnitt och kompletta användarresor
+7  Handlarens onboarding
+8  Företagskund och inköpsmandat
+9  Sortiment streckkoder enheter och priser
+10  Skanning och varukorg
+11  Attest och slutlig köpbekräftelse
+12  Kredit och interna budgetar
+13  Varukontroll utlämning och annullering
+14  Fakturering betalningsstatus retur och reklamation
+15  Arkitektur och regelägarskap
+16  Datamodell och integritetsregler
+17  Behörighetsmodell och permissions
+18  API kontrakt och domänoperationer
+19  Transaktioner idempotens och bakgrundsjobb
+20  Integrationer synk och avstämning
+21  Dokument mallar och e post
+22  PWA klienter och kompatibilitet
+23  Identitet sessioner och kontoåterställning
+24  Säkerhet support och revisionsspår
+25  Integritet cookies och juridiska dokument
+26  Drift övervakning och incidenter
+27  Backup återställning och kontinuitet
+28  Release provisionering och white label drift
+29  Export avslut och leverantörsbyte
+30  Styrfiler dokumentation och återupptagning
+31  Selektiv open source och skills
+32  Kravregister och spårbar verifiering
+33  Byggordning och leveranspaket
+34  Pilotdrift och godkännandekriterier
+35  Kostnader förvaltning och kommersiellt ansvar
+36  Beslutsregister risker och första utvecklingsuppdrag
+37  Källregister och kontroll av externa beroenden
+38  Pilotprofil och slutlig startkontroll
+
+1 Så används masterplanen
+Dokumentets omfattning
+Läs kapitel 1–6 för produktgränser, pilotomfattning, roller och gränssnitt.
+Använd kapitel 7–14 när verksamhetsflöden och ekonomiska regler byggs.
+Använd kapitel 15–22 för arkitektur, databas, API, integrationer och klienter.
+Använd kapitel 23–29 för identitet, säkerhet, integritet, drift och avslut.
+Använd kapitel 30–36 för dokumentation, återanvändning, verifiering, etapper och nästa uppdrag.
+Använd kapitel 37 för källregister och kontroll av leverantörsberoende uppgifter.
+Använd kapitel 38 för en sista kontroll av pilotprofilen före verkliga köp.
+Hur kraven ska läsas
+Ett krav med ett stabilt ID ska kunna kopplas till ansvarig modul och verifiering. ID ändras inte när texten förtydligas utan att innebörden ändras.
+Ordet ska anger avsett beteende inom beslutad omfattning. Bör anger en rekommendation som får ersättas med ett motiverat beslut.
+Fast produktval betyder att valet redan ingår i uppdraget.
+Arbetsbeslut betyder att planen anger ett föreslaget standardvärde för fortsatt utveckling. Det är inte ett påstående om en undertecknad kundöverenskommelse.
+Öppet beroende betyder att faktisk leverantörsförmåga, åtkomst, juridisk part eller kommersiellt villkor måste klarläggas. Endast beroende funktion hålls tillbaka.
+Förberett betyder att arkitekturen ska tillåta en framtida funktion. Det betyder inte att funktionen ska implementeras i piloten.
+Planerat, implementerat, verifierat och driftsatt är olika tillstånd. Ett testresultat ska alltid avse ett bestämt kodläge och en bestämd miljö.
+Exempelbelopp, statusnamn, tabellnamn och endpoints är specifikationsexempel. Faktiska kontrakt fastställs i API-projektet innan motsvarande funktion byggs.
+Styrning och ändringar
+BASE-101: Denna plan används tillsammans med AGENTS.md, ENGINEERING_STANDARD.md version 2.0.0 och SKILLS_CATALOG.md version 2.0.0.
+BASE-102: Produktkrav, gemensamma beslut och API-kontrakt har en auktoritativ plats i scan-api. Webbprojektet använder versionerade kontrakt och dokumenterade referenser.
+BASE-103: En avvikelse ska ange krav-ID, omfattning, beslutsägare, motivering och konsekvens. Ett krav ändras inte för att dölja ett implementationsfel.
+BASE-104: Denna leverans specificerar avsett systembeteende. Varje verklig implementation ska styrkas i projektets kravregister; en skriven plan är inte ett testbevis.
+BASE-105: Följ nästa ej verifierade steg. Dokumentera osäkert utfall av externa anrop innan återförsök eller överlämning.
+Klart när
+Ansvarig utvecklare kan hitta ett flödes regelägare, data, behörighet, felväg och verifieringskrav.
+Aktuella antaganden och externa beroenden är synliga i beslutsregistret.
+En ny agent kan återuppta arbetet från projektstatus utan att anta att föreslagna integrationer redan fungerar.
+2 Produktmål och ansvariga parter
+Produktens huvuduppgift
+Förkorta kundens väg från vara till kontrollerat företagsköp.
+Ge köparföretaget kontroll över vem som köper, till vilket projekt och inom vilken gräns.
+Ge handlaren kontroll över kundgodkännande, kredit, varukontroll, utlämning och ekonomiska avvikelser.
+Återanvänd en produkt för flera oberoende handlare genom konfiguration.
+Bevara spårbarhet från personens bekräftelse till fysisk utlämning och extern fakturarad.
+Göra avbrott och manuella undantag hanterbara i butikens verkliga arbete.
+Parter och verksamhetsgränser
+Begrepp
+Betydelse
+Plattformsbolag
+Leverantören som driver och förvaltar programvaran. Juridiskt namn fastställs före kundavtal.
+Handlare
+Oberoende säljverksamhet och produktens tenantgräns.
+Säljande juridisk person
+Bolaget som ingår köpet och står på fakturan. En per handlarmiljö i piloten.
+Butik
+Fysisk försäljningsplats med egna tilldelningar och utlämningsrutiner.
+Lager
+Lagerplats eller lagerenhet i utpekat huvudsystem.
+Köparföretag
+Företaget vars anställda genomför inköp.
+Kundkonto
+Köparföretagets relation till en bestämd handlare med kundnummer, villkor och kredit.
+Person
+Verifierad användaridentitet som kan ha flera separata medlemskap.
+Medlemskap
+Personens aktuella mandat inom en handlare eller ett kundkonto.
+Integration
+Avgränsad maskinidentitet med egen anslutning, scopes och revisionsspår.
+
+BASE-201: Ett kundkonto hos handlare A ger ingen åtkomst till ett konto hos handlare B, även om organisationsnumret är samma.
+BASE-202: Alla affärsdokument anger rätt säljande juridisk person. Varumärket får inte ersätta uppgift om avtalspart.
+BASE-203: En person kan företräda flera köparföretag. Aktivt kundkonto och projekt ska visas tydligt genom hela köpet.
+BASE-204: Ett organisationsnummer eller en verifierad epostadress bevisar inte i sig mandat att företräda ett företag.
+BASE-205: Plattformens abonnemang till handlaren och handlarens försäljning till köparföretaget är separata affärer med separata ekonomiska flöden.
+BASE-206: Plattformen blir inte automatiskt kreditgivare eller betalningsmottagare för handlarens försäljning. Faktisk ansvarsfördelning dokumenteras i avtal och integration.
+Begrepp genom köpförloppet
+Varukorg är föränderliga artikelrader före köpet.
+Prisunderlag är ett identifierbart underlag från beslutad prisauktoritet med giltighet och beräkningsregler.
+Köpavsikt är ett beständigt försök att genomföra ett visst köp, med stabil identitet.
+Attest är köparföretagets interna godkännande av ett bestämt underlag.
+Kundbekräftelse är personens slutliga godkännande av visat köpunderlag.
+Orderacceptans är säljarens accepterade åtagande efter föreskrivna kontroller.
+Varukontroll är butikens jämförelse mellan underlag och de fysiska varorna.
+Utlämning är en bekräftad överföring av bestämda mängder till en godkänd mottagare.
+Fakturaunderlag är data som ska överföras till ekonomisystemet enligt avtalad faktureringsgrund.
+Faktura är ekonomisystemets utfärdade dokument med dess fakturanummer.
+Returmottagning betyder att varan har tagits emot för handläggning.
+Kreditering är en separat ekonomisk korrigering; den följer inte automatiskt av returmottagningen.
+Avvikelse är ett ärende som kräver granskning eller åtgärd för att flödet ska kunna fortsätta korrekt.
+Klart när
+Pilotens verkliga säljbolag, kontaktvägar och ansvariga personer är registrerade.
+Parterna kan beskriva vem som säljer, beviljar kredit, fakturerar och hanterar retur.
+3 Fasta produktval och tekniska arbetsbeslut
+Fasta produktval
+BASE-301: Produkten ska vara white label för flera oberoende handlare.
+BASE-302: Vi använder två fristående repon, scan-web och scan-api, utan monorepo.
+BASE-303: Webbprojektet innehåller PWA, handlarportal, företagskundportal och åtkomstskyddad plattformsadministration.
+BASE-304: API-projektet äger affärsoperationer, datamodell, migrationer, integrationer, dokumentjobb och meddelandejobb.
+BASE-305: Första kundappen distribueras som PWA per handlare. Kärnflödet ska också fungera utan installation i stödda webbläsare.
+BASE-306: Creditsafe ska kunna anslutas via backend med verifierade datarättigheter och vald API-produkt.
+BASE-307: Kunden ska kunna få köpbekräftelse och följesedel samt hitta tillåtna dokument i portalen.
+BASE-308: Inköpsrätt, attest, kreditbeslut, fakturering, returmottagning och kreditering är olika permissions.
+BASE-309: Endast behövliga open source-komponenter används eller portas efter kontroll av exakta filer, licens och beroenden.
+BASE-310: Webb, eventuell framtida mobilapp och maskinintegrationer använder samma API och domänregler.
+BASE-311: Första bygget använder Vercel och Supabase utan Railway. Webb och API har varsitt Vercelprojekt och varsitt kodrepo. Bakgrundsjobb ägs av scan-api och körs genom Vercel Workflows med beständig outbox och jobbstatus i databasen.
+Tekniska arbetsbeslut för första bygget
+Fråga
+Arbetsbeslut
+När valet verifieras
+Webb
+TypeScript, React och Next.js.
+Vid bootstrap med låsta stödda versioner.
+Backend
+TypeScript och Node.js med moduler i en sammanhållen applikation.
+Vid bootstrap och första integrationsprov.
+Databas
+PostgreSQL med explicit transaktionsmodell.
+Före första kritiska mutation.
+API och bakgrundsjobb
+Node.js-funktioner respektive Vercel Workflows från samma scan-api-repo.
+Vid kö-, återstarts- och uppgraderingsprov.
+Hanterad infrastruktur
+Supabase PostgreSQL, Auth och privat Storage.
+Anslutningsmodell, region och kontoåtkomst verifieras vid bootstrap.
+Jobb
+Beständig outbox, inbox och jobbstatus i PostgreSQL; Workflows utför arbetet.
+Avbrott efter commit, återförsök och avstämning i första kompletta köpförloppet.
+Hosting
+scan-web och scan-api i två separata Vercelprojekt, utan Railway.
+Byggkedjor, funktionsgränser, region och miljöseparering verifieras vid bootstrap.
+Kontraktsdistribution
+OpenAPI i scan-api och versionslåst genererad webbklient.
+Före klientens första affärsanrop.
+Drift
+Gemensam drift med strikt handlarisolering som standard.
+Vid arkitekturbeslut före provisionering.
+Dedikerad installation
+Separat databas eller hel miljö som uttryckligt tillval.
+Innan erbjudandet säljs eller levereras.
+
+Praktisk innebörd av separat för varje handlare
+Varje handlare får egen domän eller subdomän, PWA-identitet, profil, kundkonton, butiker, roller, dokument och anslutningar.
+Samma versionsstyrda kod används för alla handlare.
+Handlarinställningar lagras som kontrollerad konfiguration med validering och historik.
+Handlaranpassningar ska uttryckas som dokumenterade funktioner eller adapterförmågor. Godtyckliga kundspecifika kodgrenar ska inte vara standardmodellen.
+En dedikerad miljö använder samma releaseartefakt och kräver register över versioner, migreringar, konfiguration och återställningsansvar.
+En separat logotyp betyder inte separat databas. En separat databas ersätter inte medlemskap, objektskydd eller behörighetskontroller.
+Inget repo behöver lokal checkout av det andra för installation, bygge eller tester.
+Klart när
+Tekniska val har beslutspost och ansvarig.
+Två testhandlare kan använda samma produktversion med olika profil och isolerade data.
+Vald modell för delad respektive dedikerad drift är dokumenterad utan att skapa kundforkar.
+4 Pilotens omfattning och avgränsningar
+Arbetsbeslut för första butikspiloten
+Svenska aktiebolag som köpare.
+Sverige, SEK, svenska och handlarens verksamhetstidszon Europe/Stockholm.
+En säljande juridisk person per handlarmiljö.
+Bemannad butik och personlig inloggning.
+Fakturaköp med nätanslutning vid slutligt godkännande och utlämningskontroll.
+Ett valt affärssystem, en Creditsafe-produkt och en epostleverantör.
+Mänskligt beslut vid första kreditaktivering och höjning av kreditlimit.
+Personalkontroll av samtliga pilotköp enligt fastställd kontrollrutin.
+En fysisk pilotbutik kan användas först. En andra testhandlare behövs från början för verifiering av isolering och profil.
+Fakturering baseras som föreslaget standardval på bekräftad utlämnad mängd. Affärssystemets förmåga ska verifieras innan detta låses.
+Ska levereras före verkliga fakturaköp
+Personliga konton, medlemskap, inbjudningar, valda återställningsflöden och föreskriven MFA.
+Roller och permissions med avgränsning till handlare, kundkonto, butik och projekt.
+Godkända kundkonton, kundvillkor och dokumenterad acceptans där den krävs.
+Artikeluppslag, relevanta streckkoder, enheter, förpackningar och verkligt kundpris.
+Varukorg, attest, slutlig kundbekräftelse och stabil köpavsikt.
+Samordnad kreditexponering och interna budgetreservationer.
+Kontrollerad orderacceptans, varukontroll och behörig utlämning.
+Grundläggande delutlämning, annullering och delretur enligt integrationens verifierade profil.
+Köpbekräftelse, följesedel, dokumentarkiv och fakturareferenser med radkoppling.
+Beständiga jobb, avvikelsekö, säker ombearbetning och ekonomisk avstämning.
+Integritetsinformation, cookieinventering, relevanta avtal och beslutade bevaranderegler.
+Tenanttester, säkerhetstester, kritiska samtidighetsprov och faktisk återställningsövning.
+Supportkontakt, utbildad butikspersonal, stoppfunktioner och reservrutin.
+Förbered för senare behov
+Flera ekonomisystem genom avgränsade adaptrar.
+Flera butiker och lager per handlare.
+Fler språk och valutor genom uttryckliga datakontrakt.
+Externa kundintegrationer med scopes och kvoter.
+Push, SSO, BankID och appar publicerade i appbutiker.
+Transportörer, avancerad plockning, batch- och serienummer.
+Samlingsfakturor om det valda ekonomisystemets flöde kräver det; verifiera den första integrationens verkliga fakturamodell redan i piloten.
+Egna delprojekt efter nytt beslut
+Obemannad butik och dörrstyrning.
+Offlinegodkända kreditköp.
+Kort, Swish, kontanter och tillhörande kassaflöden.
+Automatisk kreditaktivering och automatiska beslut om personer.
+Flera säljande juridiska personer inom samma handlarmiljö.
+Produkter som kräver funktioner eller kontroller som piloten saknar.
+Tydlig regel för senarelagda funktioner
+BASE-401: En senarelagd funktion ska vara avstängd eller visas som otillgänglig. Den får inte ha en knapp som ser fungerande ut men saknar slutligt flöde.
+BASE-402: Datamodellen får förberedas för fler behov, men stora generella ramverk byggs först när ett verkligt behov finns.
+BASE-403: Markera beroenden per funktion. Saknat Creditsafe-testkonto hindrar inte att inloggning eller skanningsprov byggs med syntetiska data.
+BASE-404: Testadaptrar märks tydligt, får inte använda produktionsuppgifter och får inte aktiveras som om de vore riktiga produktionsintegrationer.
+Klart när
+Pilotprofilen anger inkluderat sortiment, flöden, volym, öppettider och ansvariga.
+Alla senarelagda funktioner har ett medvetet läge och hindrar inga nödvändiga grundflöden.
+5 Roller ansvar och delegering
+Roller som ska kunna tilldelas
+Roll
+Omfattning
+Ansvar och begränsning
+Plattformsadministratör
+Plattform
+Provisionering, drift, abonnemang och funktionstillgång. Kunddata kräver särskilt mandat.
+Plattformssupport
+Tidsbegränsad tilldelning
+Felsökning i angivet uppdrag med verklig operatör i loggen.
+Handlaradministratör
+Egen handlare
+Personal, butiker, profil och tillåtna inställningar. Kredit och ekonomi tilldelas separat.
+Kreditansvarig
+Egen handlare
+Underlag, kreditbeslut, limiter, omprövning och beslutade stopp.
+Fakturaadministratör
+Egen handlare
+Fakturaunderlag, avstämning och tilldelade ekonomiska korrigeringar.
+Butikschef
+Tilldelade butiker
+Butiksrutiner, kontroller och särskilt tilldelade undantag.
+Butiks och lagerpersonal
+Tilldelad butik eller lager
+Hjälp, varukontroll, utlämning och returmottagning.
+Granskare
+Tilldelat område
+Läsning och godkända rapporter utan ändringsrätt.
+Kundadministratör
+Eget kundkonto
+Medlemmar, mandat, projekt, referenser och mottagare inom handlarens ramar.
+Attestant
+Kundkonto eller projekt
+Godkänna inköp inom tilldelad gräns och giltighet.
+Inköpare
+Eget medlemskap
+Skanna, begära attest och genomföra tillåtna köp.
+Ekonomiläsare
+Eget kundkonto
+Tillåten företagsgemensam ekonomihistorik och export.
+Hämtombud
+Bestämd order eller utlämning
+Ta emot varor enligt särskilt verifierat mandat.
+Integrationstjänst
+Bestämd anslutning
+Maskinhandlingar inom scopes, objektsgränser och aktuell anslutning.
+
+Ansvarsregler
+BASE-501: En roll är ett paket permissions. Rollebenämningen ska inte vara den enda kontrollen i affärslogiken.
+BASE-502: Alla handlingar kontrollerar aktuell identitet, aktiv tilldelning, objekt, status och verksamhetsgränser.
+BASE-503: Rätt att administrera personal innebär inte rätt att delegera vilka rättigheter som helst. Tillåtna tilldelningar ska vara uttryckliga.
+BASE-504: Kundadministratören kan sänka och fördela interna gränser inom beviljade ramar. Rollen får inte höja handlarens kreditlimit eller återaktivera ett kreditspärrat konto.
+BASE-505: Attestant får som arbetsbeslut inte attestera eget köp. Ett undantag kräver egen policy och verifiering.
+BASE-506: Butikspersonal kan ta emot en retur utan att få utfärda kreditfaktura.
+BASE-507: Vem som beställer, hämtar, verifierar utlämning och tar emot fakturan kan vara olika personer.
+BASE-508: För varje läsroll fastställs omfattningen egna köp, projektets köp eller kundkontots ekonomihistorik. En ny ekonomiansvarig kan behöva äldre fakturor; detta ska vara uttryckligt mandat.
+BASE-509: Ett medlemskaps avslut stoppar nya personliga handlingar enligt aktuell policy. Ett redan giltigt köp kan fortfarande behöva fullföljas av systemet.
+Klart när
+Tilldelning av varje roll kan demonstreras med ett tillåtet och ett nekat exempel.
+Självupphöjning och delegering utanför mandat nekas även genom direkt API-anrop.
+Varje pilotroll har utbildning eller hjälptext för sina verkliga arbetsuppgifter.
+6 Gränssnitt och kompletta användarresor
+Kundens PWA
+Visa handlarens identitet, aktiv butik, köparföretag och projekt utan att användaren behöver öppna en inställningssida.
+Stöd butikslänk eller QR som väljer sammanhang men aldrig ger köprätt.
+Erbjud inloggning, säker inbjudningsacceptans och begriplig återställning.
+Ge kameraskanning och manuell artikelinmatning med gemensam validering.
+Visa artikel, försäljningsenhet, mängdsteg, kundpris och antal efter avläsning.
+Ge snabb ändring och borttagning före slutlig bekräftelse.
+Visa attestkrav, aktuell ärendestatus och vad kunden behöver göra härnäst.
+Visa slutligt köpunderlag före bekräftelse.
+Skilj väntande kontroll, nekat köp, accepterad order och klar för utlämning i text och funktion.
+Visa utlämning och dokument från serverns tillstånd. En grön skärm från en gammal lokal kopia får inte fungera som nytt utlämningsgodkännande.
+Låt kunden återuppta samma köp efter nätavbrott, skärmlås och ny inloggning.
+Visa tillåten historik, dokument och supportväg.
+Handlarportalen
+Visa butikens kö över väntande kontroller och utlämningar med ansvarig och ålder.
+Visa kundkonton, medlemskap, kreditärenden och stopp inom användarens område.
+Hantera artikel- och prisavvikelser utan att kringgå beslutad prisauktoritet.
+Visa order, utlämnade och kvarstående mängder, annulleringar och returer.
+Visa fakturakopplingar och avstämningsdifferenser.
+Visa dokumentfel, mejlstudsar, fastnade jobb och osäkra externa utfall i en gemensam arbetslista.
+Ge uttryckliga åtgärder för säkert återförsök, avstämning och eskalering med tilldelade permissions.
+Hantera profil, domän och anslutningar med verifiering och historik.
+Visa hemligheters status och rotationsväg utan fullständiga nyckelvärden.
+Företagskundens portal
+Hantera personliga inbjudningar och medlemskap.
+Hantera projekt, kostnadsställen, beloppsgränser och attestanter inom beviljade ramar.
+Fastställ obligatoriska fakturareferenser och dokumentmottagare enligt huvudsystemets skrivregler.
+Visa attestkö, beslut, order, följesedlar och tillåtna fakturor.
+Ge skyddad export och möjlighet att begära hjälp eller rättelse.
+Hantera kontovillkor och mandat att acceptera dem.
+Plattformsadministration
+Hantera handlarstatus, provisionering, domäner, funktionstillgång och teknisk hälsa.
+Skilj abonnemangsstatus från användar-, kredit- och orderstatus.
+Ge en kontrollerad väg till tidsbegränsad supportåtkomst.
+Visa anslutnings- och kostnadsproblem utan att all personal får åtkomst till kundinnehåll.
+Hantera försäljningspaus, pågående avslut och slutligt avslut som olika lägen.
+Gemensamma gränssnittskrav
+BASE-601: Alla relevanta vyer har laddning, tomt läge, fel, åtkomst nekad och återhämtningsväg.
+BASE-602: Kärnflöden fungerar på de verkliga telefoner och webbläsare som pilotprofilen anger.
+BASE-603: WCAG 2.2 AA används som teknisk målnivå om inget annat motiverat beslut finns. Rättslig tillämplighet bedöms separat.
+BASE-604: Skanning kan ersättas med manuell sökning. Viktig återkoppling bygger inte enbart på färg eller ljud.
+BASE-605: Knappar har tydlig verksamhetsinnebörd. Mottagen begäran visas inte som genomförd affär innan rätt beslut är bekräftat.
+BASE-606: Bekräftelser och fel använder en central meddelandekatalog med maskinkod, begriplig text och spårbar referens.
+BASE-607: Byte av användare, kundkonto eller handlare avgränsar cache och lokala data samt visar vad som händer med en öppen varukorg.
+Klart när
+Inköpare genomför en komplett normalresa och kan förstå ett nekat köp.
+Butikspersonal kan hantera en mängdavvikelse och en väntande integration.
+Kundadministratör kan bjuda in en inköpare utan att få handlarens kreditbehörigheter.
+Berörda flöden fungerar med tangentbord, smal skärm och realistiska svenska texter.
+7 Handlarens onboarding
+Syfte
+Ansluta en handlare med rätt juridisk säljare, egna kundkonton och en verifierad väg från artikel till faktura. En skapad miljö innebär inte att butiken är godkänd för verkliga köp. En andra handlare ska kunna anslutas genom produktens konfiguration utan en egen kodfork.
+Bindande krav
+FLOW-701: Varje handlare ska ha en verifierad juridisk säljare, ansvarig kontakt och första administratör. Varumärke, domän och avsändarnamn ersätter inte säljarens juridiska identitet.
+FLOW-702: Handlarprofilen ska innehålla butiker, lager, verksamhetstidszon, valuta, språk, supportväg, dokumentprofil och tillämpliga villkor. Behöriga personer ska godkänna integrationer och ekonomiska regler.
+FLOW-703: En integrationsprofil ska dokumentera faktisk förmåga: artikel- och kundimport, kundpris, lager, kreditreservation, order, delutlämning, faktura, kredit och betalningsstatus. Okänd förmåga ska anges som okänd. En testadapter bevisar inte leverantörens stöd.
+FLOW-704: För varje datatyp och skrivbart fält ska huvudsystem, skrivriktning, konfliktregel och ansvarig utses. Separata handlaranslutningar och externa identifierare ska användas.
+FLOW-705: Öppningsläge för kredit ska omfatta befintliga obetalda fakturor, ofakturerade åtaganden och relevanta reservationer. Import får inte skapa ett tillfälligt fritt kreditutrymme.
+FLOW-706: Aktivering ska kräva dokumenterad kontroll av sortiment, fakturerbarhet, kundkopplingar, avsändardomän, behörigheter och reservrutiner. Funktionen att stoppa nya köp ska fungera innan första kundköpet.
+FLOW-707: Arbetsbeslut för piloten: svenska aktiebolag, SEK, svensk text, bemannad butik, en säljande juridisk person per handlare, ett affärssystem och slutligt köpbeslut online. Avvikelser kräver ett dokumenterat produktbeslut.
+Flöde och felvägar
+1. Skapa handlarprofil och verifiera säljaridentitet samt första administratörens mandat.
+2. Lägg upp butik, lager, användare och rättighetsområden. Bestäm vem som kan besluta om kredit, utlämning och ekonomisk korrigering.
+3. Prova det valda affärssystemets verkliga testanslutning. Dokumentera begränsningar innan beroende funktioner lovas.
+4. Importera ett representativt urval. Visa förhandsgranskning, felrapport och kontokopplingar. Identitetskonflikter blir granskningsärenden.
+5. Stäm av inledande saldo och reservationer. Fastställ därefter var samtidiga kreditbeslut verkställs.
+6. Prova kundpris, köp, kontroll, delutlämning, annullering, faktura och retur. Kontrollera dokument och externa referenser.
+7. Utbilda personalen i väntande beslut, driftstopp och när varor får lämnas ut. Aktivera begränsad pilotvolym efter dokumenterat godkännande.
+Om kundpriset eller kreditreservationen saknar säker lösning förblir berörd försäljning avstängd. Övrig konfiguration och testning kan fortsätta. Vid importkonflikt får systemet inte automatiskt slå samman företag enbart utifrån organisationsnummer. Saknad e-postverifiering får inte ersättas med en annan handlares avsändare.
+Klart när
+En ansvarig kan visa ett komplett testköp och en ekonomiskt avstämd retur. Startsaldo, integrationens begränsningar och kvarstående beroenden är dokumenterade. En andra testhandlare har egna konton, priser, dokument och anslutningar, och personalen kan stoppa nya köp utan att tappa accepterade affärer.
+8 Företagskund och inköpsmandat
+Syfte
+Säkerställa att en identifierad person får företräda rätt företag hos rätt handlare. Personens identitet, företagsmedlemskap, interna inköpsmandat och handlarens kreditbeslut är separata förutsättningar.
+Bindande krav
+FLOW-801: Ett kundkonto ska tillhöra en bestämd handlare och köparrelation. Samma aktiebolag hos två handlare ska ha separata kundkonton, avtal, priser, kredit och historik.
+FLOW-802: Organisationsnummer, e-postdomän eller ett känt kundnummer får inte ensamt ge åtkomst. Första kundadministratören ska godkännas genom en dokumenterad verifieringsprocess.
+FLOW-803: Personliga konton ska användas. Medlemskap ska ange status, giltighet och tillåten omfattning. Ett användarkonto kan ha flera separata medlemskap utan gemensamt inköpsmandat.
+FLOW-804: Inköpsregler ska kunna begränsa handling, företag, butik, projekt, kostnadsställe, belopp och period. Varje beloppsregel ska ha uttrycklig valuta och momsgrund.
+FLOW-805: Kundadministratören får fördela mandat inom handlarens godkända ramar. Rollen får inte själv höja handlarens kreditlimit, återaktivera kreditspärr eller tilldela sig rättigheter utanför sitt delegationsmandat.
+FLOW-806: Kontovillkor och köpanknutna villkor ska ha version och omfattning. Acceptans ska kopplas till rätt part, person, mandat och tidpunkt. Befintligt kontoavtal kan refereras när dess tillämplighet har verifierats.
+FLOW-807: Aktuell medlemsstatus och relevanta spärrar ska kontrolleras vid känsliga handlingar. En väntande attest, gammal session eller öppen varukorg får inte bevara återkallad köprätt.
+FLOW-808: Förlorad inloggning, ändrad kontaktuppgift och sista administratörens avgång ska följa säkra konto- och ägarbytesflöden. Återställning får inte skapa ett nytt företagsmandat.
+Flöde och felvägar
+1. Personen verifierar sin identitet enligt produktens valda inloggningsmodell.
+2. Handlaren verifierar kundrelation, eventuell befintlig extern kundpost och den första administratörens mandat.
+3. Behörig företrädare accepterar tillämpliga kontovillkor. Kreditärendet hanteras separat.
+4. Kundadministratören bjuder in anställda med avgränsad roll, giltighet och inköpsgränser.
+5. Inköparen väljer kundkonto och projekt. Servern kontrollerar att valet är tillåtet.
+6. Vid personalförändring återkallas medlemskap eller mandat. Historiska affärshändelser behåller den faktiska aktörens identitet enligt bevarandereglerna.
+En inbjudan ska hantera fel inloggad person, utgång, återkallelse och upprepad acceptans. Befintliga kundposter med oklara identiteter blir granskningsärenden. Kontoaktivering utan godkänd kredit får inte visas som tillåtelse till fakturaköp.
+Exempel: samma person köper för Byggbolaget AB hos handlare A och B. Ett mandat på 20 000 kr hos A medför varken mandat eller kredit hos B. Projektbytet från privat arbetsgrupp till företagets större projekt kräver en ny behörighetskontroll.
+Klart när
+En behörig kund kan bjuda in en inköpare och begränsa hens inköp. Fel företag, manipulerat medlemskap och otillåten rolltilldelning avvisas. En spärrad person kan inte slutföra sitt tidigare öppna köp. Kontoåterställning fungerar utan att företagsbehörighet utökas.
+9 Sortiment streckkoder enheter och priser
+Syfte
+Göra varje skanning till ett entydigt artikel-, mängd- och prisunderlag. Kunden ska kunna förstå vad hen köper och vilket slutligt belopp som godkänns.
+Bindande krav
+FLOW-901: Handlarens utpekade affärssystem ska vara prisauktoritet för piloten. API:t ska tillämpa dess verifierade prisunderlag och beslutade beräkningsregler. Plattformen får inte skapa en parallell, självständig kundprislista.
+FLOW-902: Artikel, variant, försäljningsenhet, förpackningsnivå, innehåll och mängdsteg ska modelleras uttryckligt. Streckkodskopplingar ska vara handlarbundna och konflikter ska stoppa automatisk tolkning.
+FLOW-903: Pengar och mängder ska ha fastställd precision. Prisunderlaget ska ange valuta, momsgrund, rabatter, avgifter, avrundning och giltighet. Transport mellan systemen får inte ändra dessa värden genom oavsiktlig flyttalsomvandling.
+FLOW-904: Katalogpris, avtalat kundpris och slutligt accepterat pris ska vara skilda begrepp. Prisunderlag ska bindas till kundkonto, butik, artikelmängder och relevant projekt när priset beror på dessa.
+FLOW-905: Sortimentet ska ha kontrollerad tillåtelse för självskanning. Artiklar som kräver manuell mätning, särskild behörighet eller en prisregel integrationen inte stöder ska styras till personal eller spärras.
+FLOW-906: Slutligt pris ska verifieras före köpacceptans. Ändrad mängd, avgift, rabatt eller pris ska ge ett nytt underlag och ny kundbekräftelse samt ny attest när attestunderlaget påverkas.
+FLOW-907: Historiska orderrader ska bevara accepterad artikelbeskrivning, enhet och ekonomiska värden. Senare ändrad katalog eller förpackningsstorlek får inte ändra tidigare affärer.
+FLOW-908: Utse lagerauktoritet per butik och lager. Ange om synligt saldo är informativt eller ett bekräftat tillgänglighetsbesked och vilken informationsålder som tillåts.
+FLOW-909: Bestäm när lager reserveras, hur länge en reservation gäller och hur den övergår till faktisk utlämning eller godkänt avslut. Skanning ska inte automatiskt låsa lager. Valet ska stämma med affärssystemets provade förmåga och övriga säljkanaler.
+FLOW-910: Om kunden håller en fysisk vara men huvudsystemet visar noll ska behörig personal hantera avvikelsen med orsak och spårbar lagerkorrigering eller godkänd reservrutin. Klienten får inte ändra saldo eller godkänna köpet enbart utifrån kundens uppgift.
+FLOW-911: Lagerreservation och lagerrörelse ska ha stabila källreferenser. Övergiven reservation får släppas enligt policy, men okänt utfall eller accepterat kvarstående åtagande får inte skapa fri tillgänglighet utan verifierad hantering. Avvikelsen ger inget undantag från kredit- eller mandatkontroll.
+Flöde och felvägar
+1. Matcha koden inom handlarens katalog. Visa artikel, enhet och vilken förpackning som avses.
+2. Kontrollera att artikeln är aktiv och tillåten för självskanning i vald butik.
+3. Tillämpa tillåtet mängdsteg. Kunden ser exempelvis skillnaden mellan ett paket med tio delar och tio paket.
+4. Hämta eller beräkna kundpriset enligt verifierat avtal med affärssystemet. Visa informationsålder och eventuell preliminär status.
+5. Verifiera hela underlaget inför slutlig bekräftelse. Lås det accepterade resultatet till ordern.
+Okänd kod, flera möjliga artiklar, saknad kundprissättning eller enhetskonflikt ska ge ett begripligt stopp och personalärende. Appen får inte anta att en okänd kod är ett stycke eller att ett saknat pris är noll.
+Arbetsbeslut för piloten: inför en sortimentsmatris med stöd, personalhantering eller uteslutning. Pröva särskilt meterartiklar, vikt, minimiantal, mängdrabatt, kapavgift, pant och andra tillägg. Dessa funktioner ska endast byggas när pilotens verkliga sortiment behöver dem. En vanlig decimalmängd är inte i sig stöd för automatisk tolkning av viktkod.
+Klart när
+Representativa etiketter och kundprisfall ger samma godkända belopp i appens underlag och affärssystemets verifierade flöde. Förpackning, decimalmängd och avgifter fungerar för det tillåtna sortimentet. Osäkra artiklar styrs till personal och prisändringar kan inte passera utan ny bekräftelse.
+10 Skanning och varukorg
+Syfte
+Ge inköparen ett snabbt mobilflöde som återhämtar sig efter vanliga avbrott och alltid visar rätt företag, butik och köpstatus.
+Bindande krav
+FLOW-1001: Kunden ska välja ett tillåtet kundkonto och en butik före köp. Projekt och obligatoriska referenser ska efterfrågas enligt kundens regler. Sammanhanget ska vara synligt under skanningen.
+FLOW-1002: Kameraläsning ska ge tydlig återkoppling och skilja upprepade kamerabilder från avsiktlig skanning av flera exemplar. Mängd ska kunna granskas och rättas före bekräftelse.
+FLOW-1003: Manuell kodinmatning och artikelsökning ska vara fungerande alternativ. Nekad kameraåtkomst, okänd kod och otillåten artikel ska ha en konkret felväg.
+FLOW-1004: Varukorgen ska ha serverlagrad identitet, versionsnummer och tillhörighet till person, handlare, kundkonto och butik. En gammal flik får inte skriva över ett senare underlag.
+FLOW-1005: Byte av kundkonto, projekt eller butik ska ompröva berörda artiklar, priser och mandat. Systemet ska förklara konsekvensen innan kunden fortsätter.
+FLOW-1006: Slutlig utcheckning ska kräva uppkoppling. Ett lokalt sparat utkast får inte automatiskt genomföras när nätet återkommer. Privat cache får inte visas som aktuellt verifierat kredit- eller köpbeslut.
+FLOW-1007: Samma köpavsikt ska återupptas efter sessionavbrott, installation eller telefonbyte där serverläget medger det. Appen ska först kontrollera verklig status och får inte skapa en ny order för ett redan accepterat köp.
+FLOW-1008: Kunden ska kunna skilja utkast, väntande attest, väntande kontroll, accepterad order och utlämnade varor. Ett grönt skanningsbesked får inte utformas som ett slutligt utlämningsbesked.
+Flöde och felvägar
+1. Kunden öppnar handlarens länk eller butikskod och verifierar visad handlare och butik.
+2. Efter inloggning väljer kunden ett behörigt kundkonto och eventuellt projekt.
+3. Kameran aktiveras efter tillstånd. En lyckad läsning visar artikel, mängd, enhet och prisstatus.
+4. Kunden kan rätta antal, ta bort rad eller be personal om hjälp. Berört underlag får en ny version.
+5. Inför fortsättning visar appen samtliga rader, avgifter, total och eventuella återstående kontroller.
+6. Efter avbrott hämtas köpavsiktens serverstatus. Kunden återupptar utkastet eller får se den befintliga ordern.
+Om telefonen låses ska kameran kunna återstartas utan att varukorgen tappas. Kameran stoppas när skanningsvyn lämnas. Vid nätavbrott under slutligt anrop ska kunden få väntande status tills utfallet är känt. Samma köpavsikt används vid säker kontroll och omförsök.
+Arbetsbeslut för piloten: stödda telefoner och webbläsare bestäms genom prov i butik med verkliga etiketter och ljusförhållanden. Installationshjälp ingår, medan installation inte är ett krav för kärnflödet.
+Klart när
+Representativa telefoner klarar skanning, manuell inmatning, bakgrundsläge och återinloggning. Två samtidiga flikar upptäcker versionskonflikt. Nätavbrott efter accepterat köp leder till samma order och kontobyte visar aldrig föregående kunds skyddade varukorg.
+11 Attest och slutlig köpbekräftelse
+Syfte
+Skilja kundföretagets interna godkännande från inköparens köpbekräftelse och handlarens acceptans. Ett godkänt attestärende ska inte kunna förändras till ett annat köp utan ny prövning.
+Bindande krav
+FLOW-1101: Attestregeln ska ha en auktoritativ ägare i API:ts domänmodell och tillämpas för samtliga köpingångar. Roll, objekt, belopp och aktuell tilldelning ska kontrolleras vid beslut.
+FLOW-1102: Attest ska bindas till ett bestämt underlag med kundkonto, butik, projekt, artikelmängder och ekonomiska värden. Versionsbyte ska ogiltigförklara berörd attest enligt den beslutade policyn.
+FLOW-1103: Arbetsbeslut för piloten: egna köp får inte självattesteras. En ändring av attestunderlaget kräver ny attest. Eventuell ersättare måste ha ett uttryckligt mandat inom samma tillåtna omfattning.
+FLOW-1104: Giltighet för köpavsikt, prisunderlag och attest ska anges separat. Godkännande av ett gammalt ärende får inte automatiskt skapa order, faktura eller utlämningsrätt.
+FLOW-1105: Kunden ska slutligt bekräfta ett oföränderligt underlag med rätt säljare, köpare, artiklar, mängder, priser, moms, avgifter, total, valuta och tillämpliga villkor.
+FLOW-1106: Slutlig acceptans ska kräva aktuell kontroll av mandat, spärrar, kredit, interna budgetar och övriga förvillkor. Ett attestbeslut ersätter inte dessa kontroller.
+FLOW-1107: Köpavsikten ska ha stabil utcheckningsidentitet, innehållskontroll och beständigt resultat. Samma köpavsikt får inte skapa två order genom nya transportförsök eller olika idempotensnycklar.
+FLOW-1108: Kundbekräftelse, attest, lokal acceptans och nödvändigt externt godkännande ska sparas som särskilda händelser. UI och dokument får endast påstå det tillstånd som faktiskt har bekräftats.
+Flöde och felvägar
+1. API:t validerar varukorg och avgör om attest krävs.
+2. Behörig attestant får ett ärende med exakt underlag och beslutstid. Notislänk öppnar ärendet efter autentisering.
+3. Attestanten godkänner eller avslår med spårbart beslut. Länkbesök eller e-postförhandsvisning får aldrig godkänna inköpet.
+4. Inköparen återupptar köpet och granskar aktuellt, giltigt underlag. Ändringar utlöser ny bekräftelse och vid behov ny attest.
+5. API:t säkrar nödvändiga reservationer och beslutar om acceptans enligt integrationsprofilen.
+6. Kunden får antingen accepterad order, väntande kontroll eller ett tydligt avslag. Köpbekräftelse skapas först från rätt accepterade data.
+Vid försenad attest hålls den ursprungliga begäran spårbar, men kunden måste återuppta köpet. Vid okänt externt utfall ska systemet kontrollera den befintliga begäran innan något nytt skapas. Om en delreservation misslyckas ska säkrade delresurser återställas genom beständiga uppdrag.
+Klart när
+Fel attestant, självattest och ändrat underlag avvisas. Samma köpavsikt ger högst en order även efter omstart. Ett sent godkännande skapar inget automatiskt köp och kundens accepterade underlag kan återges oförändrat i efterhand.
+12 Kredit och interna budgetar
+Syfte
+Kontrollera handlarens ekonomiska risk och kundens interna inköpsgränser utan dubbelräkning. Tillgängligt utrymme och tillåtelse att köpa ska vara skilda beslut.
+Bindande krav
+FLOW-1201: Kreditauktoriteten ska utses för säljande bolag, kundkonto och valuta. Samtliga säljkanaler ska delta i samma säkra reservation eller disponera verifierat åtskilda delbudgetar.
+FLOW-1202: Arbetsbeslut för piloten: kreditexponering beräknas inklusive moms och avtalade avgifter. Interna budgetar kan ha annan uttrycklig momsgrund. Creditsafes rekommendation ska skiljas från handlarens limit och faktiskt disponibelt saldo.
+FLOW-1203: Exponeringen ska omfatta ömsesidigt avgränsade obetalda fakturor, accepterade ofakturerade åtaganden och aktiva reservationer. Övergång till faktura får varken dubbelräkna eller tillfälligt frigöra beloppet.
+FLOW-1204: Positivt kreditutrymme får inte kringgå aktivt köpstopp. Policy ska ange hantering av förfallen skuld, manuellt kreditstopp, riskförändring och sänkt limit. Nya köp och redan accepterade åtaganden ska behandlas separat.
+FLOW-1205: Personens periodgräns, projektbudget och övriga nödvändiga budgetar ska skyddas mot samtidiga köp. Period, tidszon, momsgrund och återföringsregel ska vara definierade.
+FLOW-1206: Reservationer ska ha stabil identitet, belopp, valuta, syfte, status och koppling till köp. De får löpa ut för övergivna köp. Exponering för en accepterad order får inte släppas enbart genom timeout.
+FLOW-1207: Delvis säkrade reservationer ska ha en beständig återställningsprocess. Okänt utfall eller obekräftad kompensation får inte visas som frigjort utrymme. Återförsök ska återanvända rätt referenser.
+FLOW-1208: Betalning, kreditering och annullering får frigöra utrymme först efter bekräftelse från rätt auktoritet. En mottagen retur eller skickad krediteringsbegäran är inte i sig en genomförd ekonomisk korrigering.
+FLOW-1209: Arbetsbeslut för piloten: första kreditaktivering och limithöjning kräver mänskligt beslut. Underlagets källa, ålder, beslutande person och regelversion ska bevaras med begränsad åtkomst.
+Flöde och felvägar
+1. Kontrollera att kundkontot är aktivt, att tillämpliga villkor gäller och att inget relevant köpstopp är aktivt.
+2. Hämta tillförlitlig exponering och kontrollera utrymme hos kreditauktoriteten.
+3. Kontrollera och reservera interna budgetar och kredit genom samtidighetssäkra operationer.
+4. Acceptera köpet först när nödvändiga besked är säkrade. Vid delvis misslyckande registreras återställning och uppföljning.
+5. Flytta senare exponering mellan åtagande, faktura och betalning genom bekräftade kopplingar. Stäm av kvarstående differenser.
+Exempel: 100 000 kr limit minus 40 000 kr obetalda fakturor, 20 000 kr ofakturerat och 5 000 kr reservationer ger 35 000 kr utrymme. Ett aktivt köpstopp kan ändå neka nästa köp. Ett nytt köp på 10 000 kr lämnar 25 000 kr; senare fakturering av samma köp ändrar inte exponeringen en gång till.
+Om limit sänks under befintlig exponering stoppas nya köp enligt policy. Redan accepterade affärer får inte tyst raderas. Ansvarig bedömer eventuell utlämningsspärr, annullering eller fortsatt fullföljande med spårbart beslut.
+Klart när
+Samtidiga köp kan inte överskrida kredit eller intern budget. Köpstopp gäller trots positivt saldo. Delvis misslyckad reservation återhämtas utan för tidig frigivning och övergången från order till hel- eller delfaktura bevarar korrekt exponering.
+13 Varukontroll utlämning och annullering
+Syfte
+Knyta det godkända digitala köpet till de varor som faktiskt lämnar butiken. Ett utlämningsbesked ska innebära att samtliga beslutade kontroller är uppfyllda.
+Bindande krav
+FLOW-1301: Arbetsbeslut för piloten: utlämning sker i bemannad butik med en dokumenterad kontrollrutin. Stickprov, obligatoriska kontroller och undantagsmandat ska vara beslutade före start.
+FLOW-1302: Kontrollbeslut ska bindas till aktuellt order- eller utlämningsunderlag. Ändrad mängd eller upptäckt avvikelse får inte lämna ett tidigare kontrollgodkännande giltigt för ett annat innehåll.
+FLOW-1303: Klar för utlämning ska kräva de besked integrationsprofilen anger. Okänd kreditreservation eller orderacceptans ska ge väntande kontroll. Ett skickat anrop eller en skärmbild är inte ensamt utlämningsmandat.
+FLOW-1304: Utlämningsrätt ska vara åtskild från inköpsrätt. Policyn ska ange om annan person får hämta, vilket mandat som krävs och vilken identitetskontroll personalen genomför.
+FLOW-1305: Utlämning och annullering ska använda gemensamt samtidighetsskydd för orderradens återstående mängd. Totalt bekräftat utlämnat plus annullerat får inte överstiga accepterad mängd. Pågående anspråk måste också hindra dubbel disposition.
+FLOW-1306: Kortlivad utlämningskod ska, där den används, bindas till rätt handlare, order och avgränsad utlämning. Förbrukning ska vara atomisk. Två olika koder får inte kringgå mängdgränsen.
+FLOW-1307: Bekräftad fysisk utlämning ska ha egen händelse, faktiska rader, mängder, tid, plats och handläggare. Tekniskt överföringsfel får inte återställa denna händelse till ett läge som möjliggör samma utlämning igen.
+FLOW-1308: Annullering ska enbart avsluta kvarvarande åtagande. Utlämnade varor följer retur- eller reklamationsflödet. Kredit, intern budget och lagerreservation frigörs först enligt bekräftat avslut i respektive auktoritet.
+FLOW-1309: Fysisk överlämning och databascommit kan inte vara en gemensam atomisk transaktion. Registrera ett beständigt utlämningsanspråk innan varorna överlämnas. Vid avbrott där det fysiska utfallet är oklart ska mängd och kod hållas spärrade tills behörig personal stämt av vad som skett. Ingen automatisk timeout får frigöra ett sådant anspråk som om varorna säkert vore kvar.
+Flöde och felvägar
+1. Kunden visar köpets aktuella serverstatus. Personal kontrollerar rätt butik, order och behörig mottagare.
+2. Kontrollrutinen avgör vilka varor som ska verifieras. Resultat och avvikelser registreras.
+3. Vid extra eller saknade varor stoppas berörd utlämning. Korrigering görs genom tillåten orderoperation, kompletterande köp eller annullering; nya ekonomiska åtaganden kräver relevant kreditkontroll, attest och kundbekräftelse.
+4. API:t registrerar ett beständigt anspråk på den avgränsade mängden och låser rätt kod till detta försök. Först därefter överlämnar personalen varorna och bekräftar den faktiska utlämningen.
+5. Bekräftelsen sparar utlämningshändelse, förbrukad kod, audit och nödvändiga bakgrundsuppdrag tillsammans. Följesedel och utlämningsbevis skapas från faktiska rader. Vid oklart fysiskt utfall stoppas nytt försök tills personalavstämning gjorts.
+6. Återstående mängd kan lämnas ut senare eller annulleras av behörig person. Externa uppdateringar följs till känt utfall.
+Exempel: en order har tio enheter. Två personal försöker samtidigt lämna ut sex vardera, medan en tredje försöker annullera fem. Slutresultatet får högst disponera tio enheter totalt. Engångsskydd för varje separat kod löser inte ensamt denna konflikt.
+En accepterad order med säkrad exponering kan enligt beslutad rutin lämnas ut medan ett separat faktureringsjobb väntar. Ett avbrott före nödvändigt godkännande ger däremot inget klartecken. Manuell hantering ska använda samma mängdregler och lämna spårbar orsak.
+Klart när
+Olika samtidiga utlämningar och annulleringar håller radgränserna. Kontrollavvikelse stoppar rätt flöde. Förbrukad kod kan inte återanvändas och en teknisk timeout efter fysisk utlämning skapar varken en andra utlämning eller ny kreditreservation.
+14 Fakturering betalningsstatus retur och reklamation
+Syfte
+Göra affären spårbar från accepterat underlag till faktura och eventuell rättelse. Fysisk retur, reklamationsbedömning och ekonomisk kreditering ska ha egna beslut.
+Bindande krav
+FLOW-1401: Pilotens ekonomisystem ska vara fakturaauktoritet och äga fakturanummer, utfärdande, bokföring och bekräftad betalningsstatus. Plattformen ska överföra avtalat underlag och återge verifierade resultat.
+FLOW-1402: Arbetsbeslut för piloten: faktiskt registrerad utlämning är faktureringsgrund. Integrationen ska bevisa att orderupplägg inte automatiskt fakturerar andra mängder. Fakturering får inte villkoras av framtida betalning.
+FLOW-1403: Kunden ska vara fakturerbar före köpacceptans. Obligatorisk referens, kundnummer, fakturaadress och leveranskanal ska valideras enligt kundavtal och integrationsförmåga. Krävd e-faktura eller annan kanal måste stödjas av befintligt verifierat flöde eller avgränsas bort.
+FLOW-1404: Den interna ekonomiska radmodellen ska kunna representera del- och samlingsfakturering. Orderrad och utlämningsrad ska kunna kopplas till externa fakturarader och vidare till kreditrader med mängd, enhet, belopp, moms och externa referenser. En enda fakturareferens per order är inte tillräcklig. Första adaptern behöver endast implementera pilotens valda och verifierade fakturamodell; modellstödet är inget löfte om att adaptern kan skapa samlingsfakturor.
+FLOW-1405: Samma fakturerbara mängd eller belopp får inte överföras dubbelt genom olika jobb. Ekonomiska differenser och manuell ändring i huvudsystemet ska upptäckas och handläggas; accepterat köp får inte tyst skrivas om.
+FLOW-1406: Retur ska kopplas till ursprunglig orderrad och utlämning. Totalt godkänd retur får inte överstiga faktiskt utlämnad mängd. Samtidiga returärenden och redan pågående mängdanspråk ska beaktas.
+FLOW-1407: Returmottagning, godkännande, lagerdestination och ekonomisk åtgärd ska vara separata. Ursprungligt pris, rabatt och moms ska ligga till grund för bedömningen. Eventuella avdrag kräver dokumenterad policy och beslut.
+FLOW-1408: Reklamation ska kunna registreras utan att en fysisk retur redan har skett. Ärendet ska dokumentera fel, omfattning, underlag, beslut och vald åtgärd. Registrering ska inte automatiskt ge kredit, ersättningsvara eller lagerförändring.
+FLOW-1409: Utfärdad faktura ska inte raderas för att korrigeringen ska försvinna. Ekonomisystemets bekräftade rättelse och koppling till ursprunget ska bevaras. Kreditutrymme frigörs enligt bekräftad ekonomisk händelse.
+Flöde och felvägar
+1. Utlämningshändelsen skapar ett beständigt faktureringsuppdrag med stabila källreferenser.
+2. Integrationen överför underlaget och hittar befintlig extern affär vid timeout innan något nytt skapas.
+3. Externa fakturarader kopplas tillbaka till källraderna. Differenser i mängd, pris, moms eller valuta går till avstämning.
+4. Betalningsstatus hämtas från huvudsystemet. En inkommande händelse är inte ensam bevis för slutligt avstämd betalning.
+5. Vid retur registreras mottagen mängd och skick. Behörig person beslutar om godkännande, lagerhantering och nödvändig ekonomisk åtgärd.
+6. Vid reklamation beslutas om exempelvis utredning, reparation, ersättning eller avslag enligt gällande villkor. Varje följdåtgärd använder sitt ordinarie kontrollerade flöde.
+Situation
+Nödvändig koppling
+En order delas på två fakturor
+Respektive fakturarad kopplas till faktiskt fakturerad utlämningsrad och delmängd.
+Flera order samlas på en faktura
+Varje källrad behåller sin identitet även när fakturan även omfattar andra säljkanaler.
+Retur före fakturering
+Faktureringsunderlag och kvarstående åtagande korrigeras enligt huvudsystemets bekräftade rutin.
+Retur efter fakturering
+Godkänd ekonomisk korrigering kopplas till rätt ursprungsfaktura och kreditrad.
+
+Klart när
+Hel-, del- och vald samlingsfakturering kan avstämmas per källa utan dubblering. Retur före och efter fakturering ger korrekta mängder och exponering. Reklamation kan utredas utan automatisk kredit och endast bekräftade ekonomiska händelser ändrar faktura- och kreditsaldo.
+15 Arkitektur och regelägarskap
+Systemet byggs som två självständiga produktrepos. scan-web innehåller Next.js, React och TypeScript för kundens PWA, handlarportalen, företagskundportalen och plattformsadministrationen. scan-api innehåller Node.js och TypeScript, PostgreSQL-modell, migrationer, domänoperationer, integrationsadaptrar och bakgrundsbearbetning. Backend är en modulär monolit. API körs som Vercelfunktioner och bakgrundsarbete som Vercel Workflows från samma backendrepo. Begreppet worker i planen avser den logiska jobbutföraren, inte ett krav på en kontinuerligt körande separat server. Ingen monorepo, gemensam workspace-lockfil eller relativ import mellan repos införs.
+Krav-ID
+Bindande arkitekturregel
+Verifiering
+TECH-1501
+Varje repo installeras, byggs och testas utan lokal checkout av det andra.
+Ren checkout i separat CI-jobb.
+TECH-1502
+scan-api äger affärsregler, behörighetskatalog, datamodell och migrationer.
+Granskning av alla skrivvägar.
+TECH-1503
+Alla affärsoperationer går genom samma API och domänoperationer.
+Samma negativa fall via webb och maskinanrop.
+TECH-1504
+API och worker använder avgränsade databasroller; migrationer använder separat identitet.
+Tester under faktiska körroller.
+TECH-1505
+Publicerad kontraktsversion kopplar ihop API, klient och eventscheman.
+Generering, kompatibilitetskontroll och låst version.
+
+Varje modul har en auktoritativ regelägare. Den ägaren definierar beteendet; andra lager verkställer skydd utan egna affärstolkningar.
+Modul eller gräns
+Auktoritativt ansvar
+Får inte göra
+Identitet och medlemskap
+Verifierad person, medlemsstatus och delegering.
+Tolka organisationsnummer som medlemsbevis.
+Behörighet
+Permissionnycklar, delegeringsregler och objektomfattning.
+Härleda ekonomibehörighet ur administratörstitel.
+Katalog och prisadapter
+Artikelkoppling och underlag från utpekad prisauktoritet.
+Låta klienten fastställa avtalat pris.
+Köp och order
+Köpavsikt, attest, accepterat underlag och orderövergångar.
+Sätta godtycklig slutstatus via generell uppdatering.
+Kredit och budget
+Reservationer och bokförd exponering enligt vald auktoritet.
+Tolka Creditsafes rekommendation som disponibelt saldo.
+Utlämning och retur
+Mängder, fysisk händelse och underlag till ekonomi.
+Utfärda kreditfaktura enbart för att vara mottagits.
+Dokument och meddelanden
+Stabil dokumenthistorik och beslutade utskick.
+Ändra köpets giltighet vid e-postfel.
+
+En tunn serverproxy i scan-web får hantera session, transport och godkänd returadress. Den får inte innehålla en alternativ kreditkontroll, prisberäkning eller ordertransaktion. Autentisering kan använda en etablerad extern leverantör; eventuell direkt klientkontakt för själva inloggningen ger ingen direkt rätt att skriva verksamhetsdata.
+Supabase är beslutad infrastruktur för PostgreSQL, Auth och privat Storage. Anslutningsmodell, region och säkerhetskonfiguration dokumenteras och verifieras vid införandet. Det ersätter inte API-lagret. Exponerade schemas, Data API, lagringsåtkomst, grants och RLS konfigureras efter faktiska åtkomstvägar. Direkta klientskrivningar får inte kringgå attest, kredit, utlämning eller ekonomiska regler.
+TECH-1506 kräver ett dokumenterat kontrakt för hur verifierad aktör når databaskontrollerna. En vanlig serveranslutning till PostgreSQL får inte antas bära slutanvändarens JWT. Om transaktionslokal kontext används ska den sättas av betrodd backend, användas inom rätt transaktion och inte läcka genom anslutningspoolen. Alternativet är uttrycklig serverauktorisering med en avgränsad körroll och kompletterande databasskydd. Valet ska visas i verkliga rolltester.
+Gemensam drift och en dedikerad handlarinstallation använder samma produktkod. Skillnaden ligger i miljö, anslutningar och konfiguration. Versionsregister ska ange API-, webb-, schema- och konfigurationsversion per installation. Kundspecifik kodfork är inte en standardlösning för white label.
+Beslutad drift utan Railway
+Del
+Driftplats
+Ansvar
+scan-web
+Eget Vercelprojekt och eget kodrepo.
+Webb, PWA, portaler och tunn sessionsproxy.
+scan-api
+Eget Vercelprojekt och eget kodrepo.
+Affärsoperationer, integrationer och serverfunktioner.
+Data och identitet
+Supabase per beslutad miljö.
+PostgreSQL, Auth och privat Storage med avgränsad åtkomst.
+Bakgrundsarbete
+Vercel Workflows i scan-api.
+Återupptagbara steg för dokument, utskick, import och ERP-uppdrag.
+
+TECH-1507: Ett vanligt API-anrop gör kort arbete inom verifierade funktionsgränser. Långa importer, exporter och dokumentjobb delas i begränsade, återupptagbara steg. Inga affärskritiska uppdrag lagras enbart i processminne eller lämnas åt oskyddad körning efter HTTP-svaret. Varje arbetssteg omfattas fortfarande av exekveringsplattformens gränser.
+TECH-1508: Affärsmutation, nödvändig audit och outbox sparas i samma PostgreSQL-transaktion. Efter commit startas Workflow från den sparade uppdragsidentiteten. En schemalagd, autentiserad avstämning hittar även uppdrag där processen avbröts mellan commit och Workflow-start. Startförsök och exekveringar dedupliceras mot samma beständiga affärsuppdrag; parallella körningar får inte skapa extra externa effekter.
+TECH-1509: Workflow-steg återanvänder domänoperationer och avsedda integrationsadaptrar i scan-api. Jobbstatus, extern referens, idempotens och osäkert utfall bevaras enligt kapitel 19. Workflows återförsök ersätter inte extern avstämning. Avbrott, dubbla starter, utgången claim och ny driftsättning provas med verklig exekveringsmodell före pilot.
+TECH-1510: Test och produktion har separata anslutningar och hemligheter. Previewmiljöer får inte använda produktionsdata eller produktionsutskick. Vercels funktionsregion och Workflows lagrings- och körregion samt Supabases region väljs och verifieras uttryckligen. Databasanslutningar använder lämplig poolning och begränsad samtidighet. Leverantörsvillkor, retention, åtkomst, kvoter och förbrukningsgränser dokumenteras innan verkliga data aktiveras. Workflow-indata och stegresultat begränsas till nödvändiga referenser; kreditrapporter och hemligheter förs inte in i körloggar.
+Produktens namn är Plockivo och vald huvuddomän är plockivo.com. Produktens adresser hämtas från central konfiguration och handlarens profil från handlarbunden konfiguration. Följande adressplan används vid provisionering:
+plockivo.com: information, erbjudande och registrering av nya handlare.
+app.plockivo.com: central inloggning och administration med behörighetsstyrda portaler.
+api.plockivo.com: API-projektets servergränssnitt och verifierade integrationsvägar.
+handlare.​plockivo.​com: exempel på en handlares egen PWA med handlarens namn, profil, kunder och butiker.
+skanna.​handlarensdomän.​se: exempel på en valfri, verifierad kunddomän som pekar mot samma centralt drivna produkt.
+Adressplanen är ett produktbeslut, inte bevis för att domänen har köpts eller att DNS, TLS och driftsättning är klara. Handlaren behöver inte ladda upp programkod till sitt webbhotell. Kanonisk adress, TLS, tillåtna returadresser och PWA-identitet fastställs före installation. Infrastrukturens subdomäner, bland annat app, api, admin, auth, www, support, status och mail, reserveras och får inte väljas som handlarslug. Sessioner avgränsas enligt identitetskontraktet; central inloggning innebär inte en gemensam sessionscookie för alla handlardomäner. Registrering av en handlare ger inte automatiskt dess kunder eller personal medlemskap eller ekonomiska rättigheter.
+16 Datamodell och integritetsregler
+Modellen skiljer personidentitet, handlarens säljbolag, företagskundens konto, medlemskap och affär. Ett organisationsnummer kan förekomma hos flera handlare utan att deras kundkonton, priser eller historik sammanförs. Ett globalt personkonto kan ha handlarbundna medlemskap om identitetsbeslutet tillåter det; detta gör inte medlemskapen globala.
+Krav-ID
+Område
+Modellregel
+TECH-1601
+Globala objekt
+Identitetsleverantörens personkoppling och produktens versionskatalog kan vara globala. Åtkomst till medlemskap avgränsas ändå.
+TECH-1602
+Handlarbundna objekt
+Kundkonto, butik, artikelkoppling, prisavtal, order, kredit, dokument, integration och audit bär handlaridentitet.
+TECH-1603
+Relationer
+Underobjekt får inte hänvisa till annan handlares huvudobjekt. Relevanta sammansatta främmande nycklar uttrycker detta.
+TECH-1604
+Externa identifierare
+Unikhet avgränsas med handlare, anslutning, objekttyp och extern identitet.
+TECH-1605
+Historik
+Accepterat köpunderlag och utfärdade dokument ersätts inte av senare masterdata.
+TECH-1606
+Samtidighet
+Mängd-, kredit- och budgetinvarianter skyddas vid konkurrerande skrivningar.
+
+En orderrad hänvisar till samma handlare, kundkonto och säljbolag som ordern. En utlämningsrad hänvisar till den orderrad den fullgör. En retur kopplas till faktisk utlämningsrad. En faktura kan omfatta flera utlämningar och en order kan delfaktureras; fakturareferens får därför inte modelleras som ett enda utbytbart fält på ordern.
+Kopplingsobjekt
+Ska bevara
+Invariant
+Utlämningsallokering
+Orderrad, utlämningsrad, enhet och mängd.
+Bekräftad utlämning plus annullerad rest överstiger inte beställd mängd.
+Fakturaallokering
+Extern fakturarad, utlämningsrad, mängd och beloppsdelar.
+Samma utlämnade mängd faktureras inte igen utan uttrycklig korrigeringshändelse.
+Returallokering
+Ursprunglig utlämning, mottagen och godkänd mängd.
+Samtidiga godkända returer överstiger inte returnerbart antal.
+Kreditallokering
+Kreditfakturarad, ursprungsfakturarad och ekonomisk orsak.
+Samma korrigeringsbeslut skapar inte flera ekonomiska effekter.
+Exponeringskoppling
+Reservation, accepterat åtagande, faktura och bekräftad betalning.
+Överförd exponering varken försvinner eller dubbelräknas.
+
+En retur är inte nödvändig för varje kredit; en prisrättelse kan vara legitim utan fysisk återlämning. En retur är inte heller automatiskt en kredit. Modellen ska registrera den verkliga orsaken och tillåten operation i stället för att skapa fiktiva lagerrörelser.
+TECH-1607 fastställer exakta representationer. Föreslagen pilotstandard är bigint för bokförda belopp i ören, alltid tillsammans med valuta. Kvantitet och enhetspris använder decimaltyper, exempelvis numeric(20,6), med uttrycklig enhet och tillåtna mängdsteg. Procentsatser har en egen dokumenterad skala. Valda gränser valideras mot största tillåtna order; inga fält får tyst kapas.
+I JSON överförs exakta belopp, decimalmängder och enhetspriser som validerade decimalsträngar. Exempelvis betyder amount_​minor: "12345", currency: "SEK" 123,45 kronor, medan quantity: "2.​500000", unit: "m" betyder 2,5 meter. Klient och server använder decimalhantering för beräkning och formatering. Konvertering till JavaScripts vanliga flyttal får inte ändra lagrade ekonomiska resultat.
+TECH-1608 kräver en avrundningsprofil som anger enhetsprisprecision, rabattordning, radnetto, moms per momssats, total och eventuell öresutjämning. ERP:s pilotbeteende verifieras med testfall. Fördelning av en rads belopp över flera utlämningar eller returer ska summera till originalbeloppet. Rester fördelas deterministiskt med stabil radordning och sparad allokering; sista delreturen får inte skapa ett nytt avrundat original.
+Tidpunkter lagras som entydiga UTC-tidsstämplar. Kalenderdatum, förfallodatum och periodgränser har separata betydelser. Periodbudget använder handlarens beslutade verksamhetstidszon. Samma regel provas vid månadsskifte och byte mellan sommar- och vintertid.
+RLS granskas tillsammans med grants, schemaåtkomst, vyers säkerhetskontext och funktioners ägare. USING och WITH CHECK ska uttrycka avsedd läs- och skrivgräns där de gäller; den faktiska PostgreSQL-semantiken verifieras. Tabellägare och privilegierade roller kan ha annan RLS-effekt än applikationsrollen. Sådana skillnader får inte döljas av tester som bara körs som databasägare.
+TECH-1609 kräver NOT NULL, främmande nycklar, relevant unikhet och radlokala värdevillkor för obligatorisk identitet, tillåtna statusar, giltig valuta och positiva verksamhetsmängder. Reverseringar uttrycks genom sin händelsetyp, inte genom godtyckliga negativa orderrader. Index väljs för verkliga tenantfilter, relationer, sorteringar och avstämningsfrågor; kritiska sökningar mäts med representativ datamängd.
+Logisk objektskarta
+TECH-1610 kräver att följande objekt kan representeras och kopplas verifierbart. Kartan är logisk; grupperade objekt kan behöva flera tabeller. Handlarbundna rader har dessutom tenant_id, stabil identitet och relevanta versions- och tidsfält. Personuppgifter begränsas till dokumenterat behov.
+Objekttyp eller objektgrupp
+Minsta fält och relationer
+Handlare och säljbolag
+Namn, driftstatus, säljbolagsidentitet, organisationsnummer, valuta, tidszon.
+Butik och lager
+Handlare, butikskod, lagerkoppling, adress, verksamhetsstatus.
+Domän och profil
+Verifierad domän, kanonisk URL, profilversion, manifestidentitet, giltighet.
+Person och leverantörsidentitet
+Intern personidentitet, leverantör, stabilt leverantörs-ID, kontostatus.
+Medlemskap
+Person, handlare, kundkonto eller personalområde, status, giltighetsintervall.
+Rolltilldelning
+Medlemskap, rollversion, objektomfattning, utfärdare, giltighet.
+Inbjudan
+Avsedd mottagare, medlemsområde, erbjuden roll, giltighet, utfärdare, förbrukningsstatus.
+Kundkonto
+Handlare, köparföretag, verifierad företagsidentitet, externa kundkopplingar, spärrtyper.
+Projekt och inköpsmandat
+Kundkonto, projektkod, tilldelning, beloppsgräns, period, momsgrund.
+Villkorsversion och acceptans
+Handlare, innehåll, version, giltighet; acceptansens person, kundkonto och mandat.
+Artikel, variant och kod
+Källartikel, variant, streckkod, förpackningsfaktor, försäljningsenhet, mängdsteg.
+Prisunderlag
+Kundkonto, rader, prisauktoritet, referens, giltighet, rabatt- och momsgrund.
+Köpavsikt och varukorg
+Person, kundkonto, butik, projekt, version, rader, aktuellt processtillstånd.
+Attest och kundbekräftelse
+Köpavsikt, underlagsversion eller hash, beslut, person, mandat, tidpunkt.
+Order och orderrad
+Köpavsikt, säljbolag, accepterat underlag, mängd, enhet, låsta beloppsdelar.
+Kreditkonto och kreditärende
+Kundkonto, säljbolag, valuta, beslutad limit, underlagsreferens, beslutsstatus.
+Reservation och exponering
+Auktoritet, köpavsikt eller order, belopp, kategori, extern referens, giltighet.
+Utlämning och utlämningsrad
+Orderrad, butik, mängd, hämtare, verifierande personal, kodstatus, tidpunkt.
+Annullering och retur
+Ursprunglig rad, begärd och beslutad mängd, orsak, disposition, behörig beslutsfattare.
+Faktura och kreditallokering
+Extern dokument- och radidentitet, ursprungsrad, mängd, belopp, valuta.
+Dokumentversion
+Källhändelse, låst data, filreferens, innehållshash, mallversion, språk.
+Meddelande och försök
+Händelse, dokumentversion, mottagare, kanal, leverantörsreferens, leveransstatus.
+Integration och mappning
+Leverantör, miljö, avgränsat konto, hemlighetsreferens, mappningsversion.
+Inbox, outbox och jobb
+Källidentitet, beständig payloadversion, uppdrag, status, claim, försök, utfall.
+Audit och avstämningsavvikelse
+Aktör, delegering, objekt, beslut, korrelation; differens, ägare och åtgärd.
+
+Separata tillståndsmaskiner
+TECH-1611 kräver egna statusar för nedanstående livscykler. Namnen är föreslagna och ska låsas med övergångarnas betydelse i API-kontraktet. En övergång kräver rätt domänoperation, förväntad version och bevarade mängd- och beloppsinvarianter. Status är ingen fritt redigerbar administrationsuppgift.
+Objekt
+Centrala tillåtna övergångar
+Får aldrig ske
+Köpavsikt
+draft → awaiting_​approval → ready_​for_​confirmation → processing → completed; utan attestkrav direkt till ready_​for_​confirmation; före acceptans även rejected, cancelled eller expired.
+Att attest ensam accepterar order; ändrat underlag behåller gammal attest.
+Order
+accepted → partially_​fulfilled → closed; accepted → closed vid full utlämning eller godkänd helannullering.
+Stängning med oreglerad rest; retur raderar eller återöppnar originalköpet.
+Utlämning
+planned → ready → handover_​in_​progress → released; osäkert fysiskt utfall ger physical_​outcome_​unknown; stopp ger blocked.
+Oklart fysiskt utfall frigör mängd; utlämnat antal återställs till outlämnat; spärr kringgås genom direkt statusbyte.
+Fakturauppdrag
+queued → processing → confirmed; tillfälligt fel till retry_wait, osäkert svar till unknown, permanent fel till manual_review.
+confirmed enbart för att anropet skickats; blind omsändning från unknown.
+Retur
+received → under_​review → approved eller rejected; ekonomisk åtgärd följs separat.
+Mottagning automatiskt blir kreditfaktura eller säljbart lager.
+Kreditärende
+requested → under_​review → approved eller rejected; oanvänt föråldrat underlag kan bli expired.
+Rekommenderad limit automatiskt blir handlarens beslut; tekniskt fel blir beviljande.
+Jobb
+queued → claimed → succeeded; fel till retry_wait, unknown eller manual_review; återtagning efter utgången claim.
+Gammal worker skriver över ny claim; osäkert utfall behandlas som obehandlad ny affär.
+
+TECH-1612 kräver orsak och beslut för terminala tillstånd. Orderns closed bär exempelvis fulfilled, cancelled eller mixed som avslutsorsak. Bekräftade utlämningar och godkända annulleringar ska tillsammans förklara hela beställda mängden. unknown löses först genom verifierat externt resultat: befintlig effekt bekräftas, eller ett säkert fortsatt försök tillåts. En tidigare kvittens, ny token eller ny appversion är inget sådant bevis.
+En bekräftad utlämning avser en bestämd fysisk omgång med låsta rader och mängder. En delutlämnad order har flera sådana utlämningar. Om kunden bara ska ta en del av en planerad omgång ändras underlaget före bekräftelsen och tidigare kontroll eller kod omprövas. Samma förbrukade kod används inte för nästa omgång. En flerradsretur kan ha skilda beslut per rad; ärendets sammanfattning får inte dölja delvis godkänd mängd.
+Ett påbörjat utlämningsanspråk reserverar mängd och kod före den fysiska överlämningen. Vid timeout måste personalen kontrollera verkligt utfall innan anspråket får bekräftas eller avbrytas. physical_​outcome_​unknown är ett handläggningsläge som inte får återställas till ready av en automatisk timer. Ett avbrutet försök som bevisligen inte lämnade ut varor kan avslutas kontrollerat och ge ett nytt verifierat försök.
+17 Behörighetsmodell och permissions
+API-projektet äger en versionsstyrd permissionkatalog. Roller är paket av handlingar, medan objektets relation, status, belopp, butik och giltighetstid begränsar den konkreta användningen. Ett betalt funktionspaket är ett separat produktvillkor och ger ingen användare nya rättigheter.
+Krav-ID
+Regel
+TECH-1701
+Neka handlingar som saknar uttrycklig tillåtelse. Verifiera aktör, aktivt medlemskap, handling och målobjekt.
+TECH-1702
+Klientstyrda actorUserId, tenantId, roll och prisgrund behandlas som obetrodda val tills servern kontrollerat dem.
+TECH-1703
+Rolltilldelning begränsas av eget delegationsmandat; självupphöjning nekas.
+TECH-1704
+Känsliga operationer använder aktuell spärr- och medlemsstatus, även med äldre token.
+TECH-1705
+Webbens permissionrepresentation genereras från en bestämd API-katalogversion. Den styr presentation, aldrig ensam åtkomst.
+
+Följande nycklar är produktens föreslagna stabila namn. En äldre prototyp med andra namn får en uttrycklig migrering eller kompatibilitetsmappning.
+Permission
+Normal omfattning
+Särskilt villkor
+purchases.​prepare
+Eget tillåtet kundkonto och butik.
+Skapa eller ändra köpavsikt och begära attest; ger ingen orderacceptans.
+purchases.​checkout
+Eget kundkonto, butik och mandat.
+Vid slutlig bekräftelse krävs aktuell attest där tillämpligt, budget, kredit och bekräftat underlag.
+purchases.​approve
+Tilldelat kundkonto eller projekt.
+Ingen självattest enligt pilotregeln; beloppsgräns.
+credit.​assess.​request
+Handlarens godkända kreditärenden.
+Avtalad informationsåtkomst och kostnadsgräns.
+credit.​assess.​read
+Uttryckligt kreditområde.
+Separat från rätt att köpa och administrera kunder.
+credit.​account.​approve
+Handlare och säljbolag.
+Dokumenterat beslut och tillräcklig autentisering.
+credit.​limit.​change
+Handlare och säljbolag.
+Skäl, aktuell version och eventuell dubbelkontroll.
+fulfillments.​release
+Tilldelad butik och utlämning.
+Rätt mottagare, kvarvarande mängd och inga utlämningsstopp.
+orders.​cancel.​request
+Kundkonto eller handlarens beslutsområde.
+Begär avslut av kvarvarande mängd utan eget ekonomiskt godkännande.
+orders.​cancel.​approve
+Handlarens beslutsområde.
+Godkänner tillåten rest enligt annulleringspolicy och externa förvillkor.
+returns.receive
+Tilldelad butik.
+Mottagning ger inte ekonomiskt godkännande.
+returns.approve
+Beslutad returhantering.
+Returnerbar mängd och registrerad bedömning.
+invoices.issue
+Behörig ekonomifunktion.
+Avtalad fakturerbar händelse och säker ERP-operation.
+credit_​notes.​issue
+Behörig ekonomifunktion.
+Godkänt korrigeringsunderlag och originalreferens.
+roles.assign
+Eget delegationsområde.
+Endast uttryckligen delegerbara roller.
+documents.read
+Dokumenttyp och objektrelation.
+Aktuell åtkomst kontrolleras vid hämtning.
+support.access
+Tidsbegränsat handlaruppdrag.
+Orsak, operatör och representerad kontext loggas.
+
+TECH-1706 kräver en historikmatris. Inköpare får som standard se egna tillåtna köp. Projektattestant ser uttryckligen tilldelat projektunderlag. Kundens ekonomiläsare kan få företagets äldre affärer genom en uttrycklig ekonomirätt. Medlemsdatum ska därför varken ge all historik automatiskt eller mekaniskt dölja legitim företagshistorik. Projektbyte och avslutat medlemskap provas separat.
+För plattformsadministration, support, kreditlimit och ekonomiska utfärdanden ska obligatorisk stark autentisering och eventuell förnyad verifiering fastställas före pilot. Förlorad faktor har ett eget verifierat återställningsflöde. Ett vanligt supportärende får inte bli en enklare väg till ekonomibehörighet.
+TECH-1707 skiljer stopp för nya köp, stopp för utlämning, personens åtkomst och fortsatt ekonomisk handläggning. Spärr efter accepterad order leder till beslutad prövning av återstående handlingar. Den får inte godtyckligt radera åtagandet eller stoppa nödvändig fakturering. En person kan förlora läsrätt samtidigt som handlaren fortfarande måste fullfölja affären.
+TECH-1708 kompletterar ekonomirättigheterna med administrativa handlingar. Samma permission kan tilldelas inom olika objektområden, men en kundadministratörs medlemsområde omfattar aldrig handlarens personal. Läsrätt till relevant underlag prövas även när uppgiften tilldelats personen.
+Permission
+Omfattning och särskilt villkor
+members.invite
+Endast eget medlemsområde och uttryckligen delegerbar roll.
+members.suspend / members.​reactivate
+Avgränsad medlemsrelation; återaktivering återskapar inte borttagna mandat automatiskt.
+projects.manage
+Kundkonto och tilldelade projekt; höjer inte handlarens kreditram.
+customer_​terms.​publish
+Handlarens versionsstyrda kundvillkor med rätt juridisk part.
+customer_​terms.​accept
+Köparföretag vars avtal personen har verifierat mandat att acceptera.
+merchant.​settings.​manage
+Godkända profil- och verksamhetsfält; ekonomiska regler har särskilda mandat.
+merchant.​domains.​manage
+Verifiering, aktivering och avveckling av den egna handlarens domäner.
+integrations.​manage
+Avgränsade anslutningar; hemligheter skrivs utan generell återläsning.
+exceptions.​resolve
+Tilldelad avvikelsekategori; ger inte rätt att ändra dess ekonomiska objekt.
+jobs.retry
+Behörigt uppdrag med kontrollerat utfall; nyckel och affärsidentitet bevaras.
+exports.create
+Uttrycklig datamängd, dokumenttyp och mottagare; inte automatiskt hela tenantens data.
+operations.​sales.​pause
+Tilldelad butik eller handlare; stoppar nya köp.
+operations.​fulfillment.​pause
+Tilldelat utlämningsområde; hindrar klartecken och registrerad utlämning.
+operations.​resume
+Samma beslutsområde, åtgärdad stopporsak och dokumenterad kontroll.
+
+TECH-1709 kräver separata nycklar för begäran och godkännande när policyn skiljer aktörerna åt. Detta gäller annullering och motsvarande känsliga undantag. Att båda nycklarna tilldelas samma person upphäver inte ett krav på oberoende granskare. purchases.​checkout ger aldrig automatiskt invoices.issue: godkänd affär kan skapa ett tjänsteuppdrag enligt fastställd faktureringsregel, men inköparen får inte själv fakturera, kreditera eller kringgå handlarens ekonomiroll.
+18 API kontrakt och domänoperationer
+Alla endpoints nedan är föreslagna gränssnitt i vårt eget /v1-API. De beskriver inte endpoints eller garanterad funktion hos ERP, Creditsafe eller annan extern leverantör. Den verkliga adaptern ansluter endast verifierad leverantörsförmåga.
+TECH-1801 kräver OpenAPI-kontrakt för autentisering, scopes, objektrelation, exakta datatyper, felsvar, samtidighetsversioner och idempotens. TECH-1802 kräver uttryckliga tillåtna skrivfält. Klienten skickar artikel, mängd och önskad åtgärd; servern fastställer giltigt pris, aktör, slutstatus och ekonomisk effekt. Transportens DTO är inte en direkt exponering av databastabellen.
+Föreslagen endpoint
+Permission
+Förvillkor och eftervillkor
+Idempotens
+POST /​purchase-​intents
+purchases.​prepare
+Giltigt medlemskap och butik; skapar ett köpärende utan accepterad order.
+Nyckel krävs.
+PATCH /​purchase-​intents/​{id}
+purchases.​prepare
+Ägd, redigerbar version; ny version och inaktuell attest vid materiell ändring.
+Versionsvillkor krävs.
+POST /​purchase-​intents/​{id}/​submit
+purchases.​prepare
+Validerade rader; skapar attestärende eller visar klart för slutlig bekräftelse.
+Nyckel och köpversion.
+POST /​approvals/​{id}/​decision
+purchases.​approve
+Rätt attestant och underlagsversion; sparat beslut, ingen automatisk order.
+Beslutets affärsunikhet.
+POST /​purchase-​intents/​{id}/​confirm
+purchases.​checkout
+Kundens bekräftelse av låst aktuellt underlag; beständig behandlingsstatus.
+Nyckel och unik köpavsikt.
+GET /​purchase-​intents/​{id}/​status
+Tillåten objektrelation
+Aktuell behörighet; returnerar verklig order- eller kontrollstatus.
+Ingen mutation.
+POST /​credit-​accounts/​{id}/​decisions
+credit.​account.​approve eller credit.​limit.​change
+Rätt beslutstyp, version och mandat; sparad limit och beslutshistorik.
+Nyckel krävs.
+POST /​fulfillments/​{id}/​handover/​start
+fulfillments.​release
+Klartecken, mottagare, mängd och kod kontrolleras; beständigt mängdanspråk skapas före fysisk överlämning.
+Nyckel och unikt aktivt anspråk.
+POST /​fulfillments/​{id}/​release
+fulfillments.​release
+Rätt aktivt anspråk och bekräftad fysisk händelse; utlämning och kodförbrukning sparas exakt en gång.
+Nyckel och unik utlämning.
+POST /​orders/​{id}/​cancellations
+orders.​cancel.​request
+Endast ej utlämnad rest; begäran registrerad, godkännande prövas enligt policy.
+Nyckel och ändringsbeslut.
+POST /​cancellations/​{id}/​decision
+orders.​cancel.​approve
+Rätt beslutsområde och aktuell rest; godkänt eller avvisat avslut med extern avstämning.
+Nyckel och unik beslutshändelse.
+POST /returns
+returns.receive
+Identifierad ursprungsutlämning; mottagen vara registrerad utan automatisk kredit.
+Nyckel krävs.
+POST /​returns/​{id}/​decisions
+returns.approve
+Returnerbar rest och rätt version; godkänd mängd och disposition sparad.
+Nyckel och unik bedömning.
+POST /​economic-​corrections/​{id}/​execute
+credit_​notes.​issue
+Godkänt underlag och rätt original; utförande eller osäkert utfall spåras.
+Nyckel och unik affärseffekt.
+POST /​invoice-​requests
+invoices.issue
+Fakturerbar utlämning och ej redan allokerat underlag; ett spårbart ERP-uppdrag skapas.
+Nyckel och unik faktureringshändelse.
+GET /​documents/​{id}/​content
+documents.read
+Rätt dokumentrelation nu; privat fil lämnas enligt åtkomstpolicy.
+Ingen mutation.
+
+TECH-1803 definierar förväntade fel som maskinläsbara koder: MEMBERSHIP_​INACTIVE, PERMISSION_​DENIED, VERSION_CONFLICT, APPROVAL_​REQUIRED, PRICE_CHANGED, CREDIT_​UNAVAILABLE, FULFILLMENT_​BLOCKED, IDEMPOTENCY_​CONFLICT och EXTERNAL_​OUTCOME_​UNKNOWN. Felsvaret innehåller begriplig svensk text, korrelations-ID och tillåten nästa handling. Det röjer inte annan handlares existens, hemligheter eller råa kreditrapporter.
+Synkron framgång betyder att operationens angivna eftervillkor är uppfyllt. Ett beständigt mottaget men ännu inte avslutat uppdrag kan returnera accepterad behandling med statusresurs, exempelvis HTTP 202. Svaret får då inte beskriva varorna som klara för utlämning. Prisändring returnerar nytt bekräftelseunderlag; servern slutför inte köpet tyst med andra belopp.
+För ändringsbara resurser används versionsnummer eller ETag/If-Match med samma betydelse genom API och databas. Ett gammalt attestbeslut får inte bli giltigt genom att klienten skickar det senast kända order-ID:t. Upprepning av ett redan avslutat kommando kontrollerar behörighet innan tidigare resultat lämnas tillbaka.
+Maskinintegrationer har egen identitet, handlarbunden anslutning och scopes som begränsar tilldelat mandat. Ett on_behalf_of-fält får bara användas med verifierad delegation. Listor, sökning och exporter har stabil sortering, paginering, storleksgränser och samma objektfilter som enskild läsning. Massoperationer får inte kringgå kontroller genom att bara verifiera listans första objekt.
+19 Transaktioner idempotens och bakgrundsjobb
+TECH-1901 kräver att varje kritisk domänoperation dokumenterar sin transaktionsgräns och samtidighetsmekanism. För en lokal orderacceptans hör order, lokala reservationer, nödvändig audit och outboxposter ihop. De skrivs i samma transaktion och framgång återkopplas efter commit. Pris- eller kreditanrop till extern leverantör hålls utanför den lokala transaktionen.
+Krav-ID
+Situation
+Obligatoriskt beteende
+TECH-1902
+Två samtidiga kredit- eller budgetreservationer.
+Kontroll och reservation sker tillsammans hos rätt auktoritet.
+TECH-1903
+Samma idempotensnyckel och samma innehåll.
+Samma behörigt åtkomliga resultat eller pågående operation återanvänds.
+TECH-1904
+Samma nyckel med annat innehåll.
+Konflikt; inget nytt affärsbeslut.
+TECH-1905
+Två olika nycklar för samma köpavsikt.
+Köpavsiktens livscykel och unik affärskoppling förhindrar två accepterade order.
+TECH-1906
+Timeout efter möjligt externt genomförande.
+Osäkert utfall; avstämning före ny effekt eller frigivet utrymme.
+TECH-1907
+Worker dör under arbete.
+Övergivet arbete upptäcks och kan återtas säkert.
+
+Idempotensnyckeln avgränsas med handlare, operation och relevant aktörs- eller delegationskontext. Underlagsversion och normaliserat innehåll binds till nyckeln. Posten reserveras atomiskt och lagrar status, resultat, tidsstämplar och referenser. Lagringstid bestäms utifrån affärens livslängd; en kort teknisk cache får inte återöppna ett redan förbrukat köp.
+Köpavsikten har en stabil identitet genom telefonbyte, installation och omförsök. En unik koppling till accepterad order skyddar mot dubbla effekter även om två flikar skapar olika tekniska nycklar. Ny legitim beställning är en ny uttrycklig köpavsikt. Dubblettskydd får inte hindra att kunden avsiktligt handlar samma artikel igen senare.
+En extern kreditreservation och en lokal budgetreservation är inte en distribuerad ACID-transaktion. Behandlingsflödet sparar därför steg, externa referenser och bekräftat utfall. Misslyckas en senare nödvändig del registreras ett kompensationsuppdrag. Köpet blir accepterat först när nödvändiga besked är säkrade enligt integrationsprofilen. Ett förlorat svar betyder kontroll pågår; det betyder varken avslag, fri kredit eller klar utlämning.
+TECH-1908 kräver korta lokala transaktioner, dokumenterad låsordning och begränsade återförsök vid relevanta lås- eller serialiseringskonflikter. Påverkat radantal och förväntad föregående version kontrolleras. Regler över flera rader skyddas med en faktisk samtidighetsmekanism; en vanlig förhandsläsning eller radlokal constraint räcker inte ensam.
+Jobbregistret innehåller handlare, operation, källbeslut, ursprunglig aktör, objekt, avsedd anslutning, datamappningsversion, försök, nästa försökstid och senast kända fel. Bearbetning har tidsbegränsad claim eller motsvarande återtagningsmodell. En återtagen worker får inte kunna slutföra en gammal claim och skriva över en ny ägare. Extern deduplicering eller avstämning behövs dessutom; lokal claim garanterar inte exakt en extern leverans.
+TECH-1909 skiljer utförandets mandat från initiativtagarens nuvarande medlemskap. Ett redan giltigt utlämningsbeslut kan fortfarande behöva skapa fakturaunderlag efter att inköparen slutat. Ett nytt kreditbeslut, nytt återutskick eller ny export kräver däremot aktuell rättighet. Worker får aldrig använda sina tekniska privilegier som ersättning för ett saknat verksamhetsbeslut. Mottagar- och läsrätt prövas enligt meddelandets aktuella policy.
+Permanenta fel hamnar i en ansvarssatt avvikelsekö. Manuell omkörning har eget mandat och audit samt återanvänder ursprunglig affärsidentitet. Kvittens av en inkommande händelse och senare bearbetning är separata tillstånd. Ett redan skickat svar får inte ensamt blockera säker ombearbetning.
+20 Integrationer synk och avstämning
+Första piloten ansluter ett ERP som utpekad prisauktoritet och fakturakälla. Plattformen äger sitt inköpsmandat, sin köpavsikt och sina dokumenterade kundbeslut. Kreditauktoritet och lagerauktoritet namnges separat; att ERP skapar fakturor bevisar inte att dess API kan reservera kredit eller lager atomiskt.
+Krav-ID
+Register eller avtal
+Minsta innehåll
+TECH-2001
+Integrationsprofil
+Leverantör, produkt, miljö, rättigheter, verifierade funktioner och begränsningar.
+TECH-2002
+Fältägarskap
+Huvudsystem, skrivriktning, konfliktregel och ansvarig per fältgrupp.
+TECH-2003
+Anslutningsidentitet
+Handlare, säljbolag, extern kontoreferens och versionsstyrd mappning.
+TECH-2004
+Avstämningsregel
+Population, jämförelse, tolerans, frekvens, ägare och tillåten åtgärd.
+TECH-2005
+Systembyte
+Brytpunkt, köade uppdrag, historiska referenser, återgång och slutavstämning.
+
+Kundnamn, juridisk identitet, fakturaadress, betalningsvillkor och dokumentmottagare kan ha olika ägare. Kundens ändring i portalen blir antingen en tillåten direkt ändring eller ett granskningsförslag till huvudsystemet. Ett gammalt importpaket får inte återaktivera spärrat konto, skriva över senare verifierad adress eller slå samman två kundkonton enbart på organisationsnummer.
+Fullimport och ändringssynk använder källversion, vattenmärke eller annan verifierad ordningsmekanism. Ofullständig import får inte tolkas som att saknade artiklar eller kunder ska raderas. Inaktivering och borttagning är uttryckliga källhändelser med dokumenterad konsekvens för öppna affärer. Import har förhandsvalidering, felrapport, spårbar körning och återupptagning.
+Inkommande webhooks verifieras enligt vald leverantörs metod och binds till rätt anslutning. Råa bytes bevaras för signaturkontroll när metoden kräver det. Händelsen sparas hållbart före kvittens. Avsändare, händelse-ID och anslutning avgränsar dedupliceringen. Äldre händelser får inte skriva tillbaka äldre ekonomiskt tillstånd.
+TECH-2006 kräver avstämning även när webhooks verkar fungera. Order, utlämning, faktura, kredit och exponering jämförs med sina auktoritativa system. Mängddifferens, beloppsdifferens, saknad referens och osäkert utfall blir skilda avvikelsetyper. Noll differens ska vara styrkt över en definierad population; frånvaro av fellogg är inget avstämningsbevis.
+Manuella ERP-ändringar hanteras som observerade externa förändringar. De får inte tyst ändra kundens accepterade pris eller skapa en extra lokal utlämning. Integrationen registrerar differensen och följer ett godkänt korrigeringsflöde. Beloppstolerans får bara avse dokumenterad avrundning; den får inte dölja saknade rader.
+Köade uppdrag behåller avsedd anslutning och mappningsversion vid systembyte. Kvoter, samtidighet och återförsök begränsas per handlare och leverantör. Ett trasigt konto får inte blockera andra handlares jobb. Hemligheter lagras separat från publik konfiguration och roteras utan att historiska affärsreferenser byter betydelse.
+Creditsafe adapter och kreditunderlag
+TECH-2007: Välj uttryckligen svensk lokal API-produkt eller Connect-produkt, landstöd, avtal, testmiljö och autentiseringsflöde. Blanda inte produktkatalogernas fält eller åtkomstmodeller. Leverantörens verkliga schema versionsbinds i adaptern.
+TECH-2008: Fastställ om handlarens eget avtal eller plattformens partneravtal används. Avtalet ska tillåta aktuella handlare, användare, rapportvisning, lagring, cache, bevakning och debitering. Ett vanligt konto antas inte ge rätt att betjäna alla handlare.
+Matcha företag med land och organisationsnummer. Otydlig eller saknad träff blir granskning och får inte kopplas till ett snarlikt bolag automatiskt.
+Normaliserat underlag anger leverantörens företagsidentifierare, rapportreferens, hämtningstid, informationsålder, riskvärde med skala, eventuell rekommenderad limit med valuta och dokumenterade riskindikatorer.
+Saknat värde lagras som okänt. Det får inte bli noll skuld, låg risk eller beviljad kredit.
+Skilj avslag från saknad företagsdata, inaktuell rapport, tekniskt fel, kvotstopp och saknad produktbehörighet.
+Kreditansvarig ser tillåtet underlag och fattar ett separat beslut med limit, villkor, motivering, giltighet eller omprövning. Inköpare får endast se relevant ärendestatus.
+Aktivera bevakning endast där produkt och avtal stöder det. Riskförändring skapar ett spårbart granskningsärende och tillämpar handlarens beslutade stoppregler.
+Hämta inte en ny rapport för varje artikel eller varje kamerabild. Förbrukning följs per handlare och ändamål.
+Bevara full rapport endast om det behövs och får ske enligt avtal och beslutad retention. Skyddad hämtning och rapportåtkomst testas separat från orderläsning.
+Vid avslut eller leverantörsbyte ska bevakning, rapportåtkomst och nycklar avvecklas enligt den verkliga anslutningen.
+21 Dokument mallar och e post
+Affärsdokument skapas från bekräftat verksamhetstillstånd. E-post är en distributionskanal; dokumentets existens och köpets giltighet är oberoende av att mejlet levereras. Fakturans identitet och rättelser följer pilotens ekonomisystem.
+Krav-ID
+Dokument eller funktion
+Utlösare och bindning
+TECH-2101
+Köpbekräftelse
+Accepterad order och exakt bekräftat underlag.
+TECH-2102
+Följesedel och utlämningsbevis
+Bestämd utlämning, orderreferens, faktisk mängd, kvarstående mängd, mottagare och verifierande personal. Följesedeln är prisfri som standard.
+TECH-2103
+Returunderlag
+Mottagning och beslut som separata dokumenterade händelser.
+TECH-2104
+Fakturareferens och kreditfaktura
+Bekräftat ERP-resultat med radallokering och originalkoppling.
+TECH-2105
+Mallregister
+Stabilt ID, version, datakontrakt, språk, ägare och handlarprofil.
+
+Slutlig PDF och låst dataunderlag sparas med handlare, säljbolag, dokumenttyp, källhändelse, mallversion, språk, tid och innehållshash. Ny kundadress, logotyp eller artikeltext ändrar inte historien. En korrigering skapar ny version eller ett särskilt rättelsedokument med länk till originalet. Ett hashvärde är en integritetskontroll, inte ensamt ett bevis på extern signering.
+TECH-2106 kräver validering av obligatoriska mallvariabler före rendering och utskick. Saknad säljare, valuta, belopp eller rätt länk blir ett hanterbart fel. Handlarredigerade profilfält behandlas som data och kodas för sitt sammanhang. Fria skript eller mallkod som kan läsa andra kunders data tillåts inte.
+Mottagarregistret skiljer inköpare, attestant, hämtare, leveranskontakt och ekonomi. En hämtare får inte automatiskt kundpris eller företagets alla fakturor. Standardutskick ger relevant sammanfattning och länk till autentiserad portal. PDF-bilaga kräver beslutad dokument- och mottagarpolicy; redan skickade kopior kan inte återkallas med en portalspärr.
+TECH-2107 kräver beständig meddelandeidentitet för handlare, affärshändelse, dokumentversion, mottagare och kanal. Leverantörens tidsbegränsade dubblettskydd kompletterar den egna modellen. Ett manuellt återutskick är en ny uttrycklig operation med audit och samma historiska dokumentversion, inte en ny affärshändelse.
+E-postdomän och avsändare verifieras före aktivering. SPF, DKIM och DMARC konfigureras enligt vald leverantör och domänägare. Test och produktion har separata mottagarregler. Studs, klagomål, spärrad adress och osäkert leverantörssvar hanteras utan obegränsad omkörning. Om ERP skickar fakturan direkt får plattformen inte samtidigt skicka en oavsiktlig dubblett.
+Attestlänkar öppnar ett autentiserat ärende; GET eller automatisk länkförhandsgranskning utför inget beslut. Transaktionsmeddelanden, säkerhetsnotiser och eventuell marknadsföring har skilda ändamål och inställningar. HTML, textalternativ, svenska tecken, långa namn och flera PDF-sidor verifieras med realistiska syntetiska data.
+22 PWA klienter och kompatibilitet
+Första kundappen är en PWA per handlare med stabil kanonisk domän och appidentitet. En handlares flera butiker använder samma app. Kärnflödet fungerar också utan installation i stödd webbläsare. Operativsystem och webbläsare fastställs efter praktiska prov med pilotens telefoner och verkliga etiketter.
+Krav-ID
+Klientbeteende
+Godkännandefall
+TECH-2201
+Stabilt manifest och godkänd domän per handlare.
+Två handlarappar på samma telefon visar rätt profil och data.
+TECH-2202
+Serverlagrad köpavsikt kan återupptas.
+Telefonbyte, ny inloggning och installation skapar ingen extra order.
+TECH-2203
+Kamera har manuell reservväg.
+Nekat tillstånd, bakgrundsläge och fel kamera förlorar inte varukorgen.
+TECH-2204
+Kreditköp kräver aktuellt onlinebeslut.
+Ingen automatisk utcheckning efter återanslutning.
+TECH-2205
+PWA-uppdatering respekterar aktivt köp.
+Omladdning och äldre klient återhämtar verklig serverstatus.
+TECH-2206
+API-kompatibilitet provas mellan releaser.
+Gammal tillåten klient och tidigare köat jobb fungerar under övergång.
+
+Skanningsvyn visar vald handlare, butik och köparföretag så att fel sammanhang upptäcks innan köp. Kameraavläsning skiljer upprepade bildrutor från avsiktlig skanning av flera exemplar. Förpackningsnivå, antal, enhet och återkoppling syns direkt. Okänd kod blir sökning eller personalärende; streckkodsinnehåll får inte initiera okontrollerade externa anrop.
+Sessionskontraktet fastställs för de faktiska handlar- och API-domänerna. Betrodda returadresser, cookieomfång, originkontroll och tokens verifieras i webbläsare och installerad PWA. Ny inloggning efter installation är ett hanterat tillstånd. Klienten får aldrig tolka en sparad medlemslista eller tokenclaim som bevis på aktuellt köpmandat.
+TECH-2207 kräver definierad cachepolicy. Statiska resurser kan versionscachas. Privata API-svar, kreditbesked och klartecken får inte visas som aktuellt verifierade enbart från lokal cache. Utloggning, kontobyte och handlarbyte rensar eller säkert separerar lokal affärsdata. Raderad lokal lagring återhämtas från servern efter behörig inloggning.
+Service workerns aktivering får inte tvinga omladdning mitt i bekräftelsen. Kunden erbjuds uppdatering vid lämpligt tillfälle. Om en gammal klient måste stoppas av säkerhets- eller kompatibilitetsskäl ska status fortfarande kunna hämtas genom stödd väg och begriplig uppdateringshjälp visas. Ett missförstått svar får inte omvandlas till ett nytt köp.
+Webb och API byggs och deployas oberoende med låst kontrakt. Schemaändringar införs kompatibelt före kod som behöver dem. Borttagning av gammalt stöd sker först efter dokumenterad övergång. Testmatrisen omfattar ny webb mot tillåtet äldre API, äldre webb mot nytt API och tidigare jobb mot ny worker där kombinationen ingår i releasefönstret.
+Mobilvy, tangentbord, fokus, felmeddelanden, zoom och skärmläsaråterkoppling ingår i kärnflödet. Push och framtida nativeapp får egna kontrakt men använder samma domänoperationer. Varken installation, notistillstånd eller ett särskilt appskal får bli ett extra krav för att genomföra pilotens grundläggande köp.
+23 Identitet sessioner och kontoåterställning
+23 1 Syfte och arbetsbeslut
+Varje köp och administrativ handling ska kunna knytas till en verifierad person eller tjänsteidentitet. Personens inloggning, medlemskap hos handlaren och mandat hos köparföretaget är separata kontroller.
+Arbetsbeslut: etablerad identitetsleverantör används; leverantör och valda inloggningssätt fastställs före authimplementationen.
+Arbetsbeslut: MFA krävs för plattformsadministration, support, handlaradministration, kredit och ekonomi. Kundadministratörens skyddsnivå fastställs i pilotprofilen; övriga roller kan erbjudas MFA.
+BankID och SSO är senare tillval. Pilotens kontoåterställning ska fungera med det valda inloggningssättet.
+23 2 Bindande krav
+SEC-2301: Identitetskontraktet ska ange leverantör, stabil personnyckel, verifierade kontaktuppgifter, inloggningssätt, sessionsmodell, MFA, återkallelse och tillåtna returadresser. Epostadress är kontaktuppgift och ska inte ensam vara bevis för organisationsägande eller säker kontolänkning.
+SEC-2302: Personkonto, handlarens personalmedlemskap, köparföretagets medlemskap och kundkontots köpstatus ska ha skilda tillstånd. Avslut av ett medlemskap hos handlare A ska inte oavsiktligt avsluta personens tillåtna medlemskap hos B.
+SEC-2303: Varje känsligt anrop ska kontrollera aktuell medlemsstatus, permission, objekt och relevant köp- eller utlämningsspärr. Ett gammalt tokenanspråk ska inte ensamt godkänna handlingen. Kontraktet ska ange verklig återkallelseeffekt för varje typ av session och bevis.
+SEC-2304: Webb, installerad PWA och API ska följa ett dokumenterat sessionskontrakt. Cookieomfång, Secure, HttpOnly, SameSite, CSRF/originkontroll, tokenrotation och livslängd ska väljas tillsammans. En eventuell webbproxy ska enbart sköta session och transport; affärsbeslut ägs av API:t.
+SEC-2305: Varje handlarapp ska använda verifierade adresser. Inloggnings- och återställningslänkar ska byggas från betrodd konfiguration, inte en godtycklig Host-header eller returparameter. En gemensam cookie som ger oavsiktlig åtkomst över handlardomäner är inte tillåten.
+SEC-2306: Inbjudan ska bindas till mottagare, tenant, kundkonto där relevant, roll, utfärdare och giltighet. Accepterandet ska tåla samtidighet och återanvändning. Länkförhandsvisning eller GET-anrop ska inte tilldela rollen.
+SEC-2307: Återställningsbevis ska vara säkert hanterade, kortlivade enligt fastställd policy och möjliga att förbruka högst en gång. Flöden ska ha missbruksskydd och generiska svar där kontons existens annars röjs. Bevis och tokens får inte hamna i loggar eller analysverktyg.
+SEC-2308: Kontaktbyte, lösenordsbyte där tillämpligt, faktorbyte och kontolänkning ska kräva tillräcklig förnyad verifiering. Säkerhetsnotis och hantering av befintliga sessioner ska följa dokumenterad policy. Byte av epostadress får inte ändra företagsmandat.
+23 3 Återställning och administratörsbyte
+1. Återställ personens inloggning genom leverantörens stödda flöde; ändra inga medlemskap som bieffekt.
+2. Vid förlorad MFA används registrerad reservmetod eller ett särskilt verifierat återställningsärende. Befintlig session, organisationsnummer eller ett obestyrkt mejl räcker inte ensamt.
+3. Registrera handläggare, verifieringsmetodens typ, beslut och relevanta återkallelser. Lagra inte hemliga återställningsbevis i ärendet.
+4. Ordinarie utträde för sista administratören kräver verifierad ersättare. Akut säkerhetsspärr ska fortfarande kunna göras; kontot går då till kontrollerad administratörsåterställning.
+5. Visa återställd persons faktiska medlemskap efter ny inloggning. Tidigare köp får inte beställas igen automatiskt.
+23 4 Klart när
+Inbjudan, login, logout, återställning, kontaktbyte, MFA-förlust och administratörsbyte har demonstrerade tillåtna och nekade fall.
+Spärr testas från gammal session, annan flik och installerad PWA. Skillnaden mellan logout här och logout överallt är verifierad.
+Två handlarappar på samma telefon håller isär profil, medlemskap, klientcache och köpavsikt.
+24 Säkerhet support och revisionsspår
+24 1 Syfte
+Skyddet ska täcka alla vägar till samma affärsdata: gränssnitt, API, databas, filer, sökning, exporter, jobb och integrationer. Tekniska privilegier ska vara möjliga att skilja från verksamhetens godkännanden.
+24 2 Bindande krav
+SEC-2401: Hotmodellen ska omfatta fel handlare, fel köparföretag, manipulerad identitet, otillåten rolltilldelning, fel belopp, stulen session, dubbla affärseffekter och skadliga importer. Ange berörd gräns, skydd och test; komplettera vid nya åtkomstvägar.
+SEC-2402: Dokument och kreditunderlag ska lagras privat. Servern ska kontrollera aktuell rättighet vid hämtning. Signerade direktlänkar får endast användas när deras begränsade återkallelse uttryckligen accepterats för den dokumenttypen.
+SEC-2403: Cache, exporter, sökindex, filnycklar och meddelandeuppdrag ska avgränsas till korrekt tenant och kundkonto. Skyddade svar får inte publiceras genom delningsmetadata, publika förhandsvisningar eller analysverktyg. Nedladdad kopia behandlas separat från fortsatt portalåtkomst.
+SEC-2404: Importer, streckkoder, mallvariabler, bilagor och externa adresser ska valideras som obetrodda data. Begränsa format, storlek och tillåtna hämtmål. Koder och mallfält ska inte bli körbar kod eller okontrollerade serveranrop.
+SEC-2405: Varje integration ska ha minsta nödvändiga scope och avgränsad handlaranslutning. Hemligheter ska ha ägare, rotation och återkallelse; gränssnittet får visa status och maskerat värde. Test och produktion ska inte återanvända samma effektgivande anslutning.
+SEC-2406: Rate limits och kvoter ska gälla känsliga authflöden, koduppslag, exporter, kostsamma upplysningar och integrationsanrop. Begränsning ska ge begripligt fel och återhämtningsväg. En angripare ska inte enkelt kunna låsa andra användare genom ett alltför grovt kontolås.
+SEC-2407: Revisionsspåret ska innehålla verklig aktör, eventuell företrädd identitet, tenant, handling, objekt, resultat, beslutsreferens och korrelations-ID. Tekniska loggar och verksamhetsaudit ska ha skilda syften och åtkomstregler.
+SEC-2408: Obligatorisk audit ska skrivas atomiskt med den lokala affärsändringen. Vanliga operatörer och applikationsflöden ska inte kunna redigera historiken. Rättelser registreras som nya händelser. Lagringstid och administrativ åtkomst ska vara beslutade.
+24 3 Supportmandat
+1. Registrera ärende, orsak, berörd handlare och vilka objekt som behöver undersökas.
+2. Bevilja ett tidsbegränsat mandat med namngiven operatör och uttryckliga läs- eller åtgärdsrättigheter enligt supportpolicyn.
+3. Kräv MFA och aktuell kontroll när mandatet används. Supportrollen får inte utvidga sitt eget mandat.
+4. Visa tydligt i operatörsgränssnittet vilken handlare mandatet gäller. Logga både operatör och eventuell representerad användare.
+5. Ekonomiska undantag, kreditändringar och rolltilldelning kräver motsvarande särskilt mandat. Läsåtkomst till ett supportärende ger inte dessa rättigheter.
+6. Låt mandatet löpa ut eller återkalla det när uppdraget avslutas. Ett nytt ärende ska inte ärva ett gammalt supportmandat.
+24 4 Klart när
+Test visar nekad åtkomst över handlar- och kundgräns genom API, filhämtning, export, sökning och jobb.
+Supportmandat provas före aktivering, under giltighet och efter återkallelse. Egen rättighetseskalering nekas.
+Fel vid obligatorisk auditskrivning lämnar ingen genomförd lokal affärsändring utan revisionspost.
+25 Integritet cookies och juridiska dokument
+25 1 Syfte och ansvar
+Information och avtal ska beskriva den verkliga tjänsten. Handlarens varumärke, säljande juridiska person och personuppgiftsansvarig för en viss behandling kan vara olika uppgifter. Ansvar ska bestämmas per relation och behandling före aktivering.
+25 2 Bindande krav
+SEC-2501: Datakartan ska ange uppgiftskategori, källa, ändamål, bedömd rättslig grund, ansvarig part, mottagare, driftregion eller överföring, lagring och skydd. Inloggning, köp, kredit, support, epost och teknisk övervakning ska ingå. Okända uppgifter markeras som öppna beslut.
+SEC-2502: Dokumentregistret ska omfatta tillämpliga plattformsavtal, handlarens kundvillkor, integritetsinformation, cookieinformation, biträdesavtal och underleverantörsförteckning. Varje post ska ha ägare, målgrupp, juridisk part, språk, version, giltighet och granskningsstatus.
+SEC-2503: Integritetsinformation, avtalsaccept och samtycke ska vara separata begrepp i data och gränssnitt. Systemet ska inte kräva ett allmänt integritetssamtycke som ersättning för att fastställa behandlingarnas grund. Köpanknuten accept ska bevara korrekt villkorsversion och mandat.
+SEC-2504: Cookies och annan lokal lagring ska inventeras före val av samtyckeslösning. Registret ska ange funktion, leverantör, ändamål, varaktighet, aktivering och klassificering. Om endast undantagna nödvändiga funktioner används dokumenteras det beslutet.
+SEC-2505: Funktioner som bedöms kräva samtycke ska hållas blockerade före relevant val. Neka och acceptera ska vara lika enkla, och återkallelse ska påverka fortsatt behandling. Kärnflöden ska fungera utan valfri spårning.
+SEC-2506: Retentionsregistret ska ange datakategori, startpunkt för tidsberäkning, lagringstid eller kriterium, beslutsgrund, gallringsmetod, undantag och ansvarig. Kreditrapport, orderbevis, fakturareferens, personkonto och teknisk logg ska inte få en gemensam godtycklig tidsgräns.
+SEC-2507: Rättighetsärenden ska hantera mottagning, proportionerlig identitetskontroll, omfattning, tidsfrist, beslut, utförande och svar. Registerutdrag, portabilitet, rättelse och radering ska bedömas var för sig. Tillämpliga juridiska tidsfrister fastställs och verifieras av ansvarig före pilot.
+SEC-2508: Gallring ska omfatta relevanta läsmodeller, sökindex, objektlagring, leverantörer och säkerhetskopiors livscykel. Bevarandekrav ska kunna begränsa radering utan att återöppna generell användning av uppgifterna. Kontostängning är inte samma sak som radering.
+25 3 Förändrings och ärendeflöde
+1. Produktägaren registrerar ny behandling eller leverantör och utser ansvarig granskare.
+2. Granskaren fastställer omfattning, avtal, information och tekniska begränsningar utifrån faktiska produktbeslut.
+3. Utveckling kopplar versionerad information till rätt handlare och flöde. Saknade villkor hindrar aktivering av det berörda flödet; oberoende utveckling kan fortsätta.
+4. Rättighetsärenden genomförs genom avgränsade operationer. Kontrollera mottagare och andra personers uppgifter före export.
+5. Registrera vad som raderats, vad som behållits med begränsad åtkomst och hur beslut ska återtillämpas efter återställning.
+25 4 Klart när
+Pilotens faktiska dataflöden, ansvariga parter och leverantörer återfinns i datakartan och informationen.
+En representativ rättighetsbegäran och ett retentionsjobb har demonstrerats med syntetiska uppgifter.
+Nätverk och lokal lagring har kontrollerats före val, efter neka, efter accept och efter återkallelse där samtycke är tillämpligt.
+Ingen juridisk text innehåller påhittade priser, uppsägningstider, säkerhetslöften eller leverantörsvillkor.
+26 Drift övervakning och incidenter
+26 1 Syfte och målnivåer
+Driften ska upptäcka när köp, utlämning eller ekonomi behöver åtgärd och ge en säker väg tillbaka. En fungerande startsida är inte ett mått på fungerande affärsflöde.
+26 2 Bindande krav
+SEC-2601: Miljöregistret ska ange utveckling, test och produktion med ansvarig, versionsläge, externa anslutningar och tillåtna effekter. Testutskick, kreditunderlag och ekonomiska testoperationer ska hållas inom avsedd testmiljö.
+SEC-2602: Kapacitetsprofilen ska ange antal handlare och butiker, samtidiga inköpare, artikelmängd, köp per minut, dokumentstorlek och relevanta externa anropskvoter. Belastningsprov ska använda dessa antaganden; resultaten får inte beskrivas som obegränsad skalbarhet.
+SEC-2603: Pilotens SLO, RTO och RPO ska ha beslutade värden, mätmetod, ansvarig och verifieringsstatus. Tillgänglighet, svarstid, återställningstid och tillåten dataförlust ska inte utlovas i kundavtal före verifiering mot vald drift.
+SEC-2604: Mät köp som accepteras respektive nekas, väntande kontroll, ålder på integrationsjobb, osäkra externa utfall, utebliven fakturering, dokumentfel, epoststudsar och avstämningsdifferenser. Skilj verksamhetsavslag från tekniska fel.
+SEC-2605: Larm ska ha mottagare, prioritet, tröskel, instruktion och eskaleringsväg. Ett larm utan ansvarig är inte färdig övervakning. Upprepade fel ska kunna samlas utan att den första allvarliga händelsen försvinner.
+SEC-2606: Stopplägen ska kunna avgränsas till handlare, butik, integration eller handling. Ett kreditstopp ska kunna stoppa nya kreditköp medan behörig avstämning och hantering av redan accepterade affärer fortsätter.
+SEC-2607: Incidentregistret ska bevara upptäckt, omfattning, tidslinje, tillfälliga skydd, ansvarig, beslut, kundinformation och återhämtning. Misstänkt personuppgiftsincident ska få separat bedömning av ansvarig part och tillämpliga åtgärder.
+SEC-2608: Tekniska loggar ska använda korrelations-ID och tillräcklig objektreferens för felsökning. Hemligheter, fullständiga token och råa kreditrapporter ska inte loggas. Loggåtkomst och gallring ska följa datakartan.
+26 3 Incidentflöde
+1. Kvittera larmet och fastställ berörda handlare, funktioner och tidsperiod.
+2. Stoppa berörd riskfylld handling. Bevara bevisning med begränsad åtkomst och undvik oplanerade omförsök.
+3. Identifiera accepterade affärer och externa operationer vars utfall är okänt.
+4. Informera berörd verksamhetsansvarig med konkret påverkan och nästa uppdatering. Kommunikationen ska skilja väntande kontroll från genomförd affär.
+5. Rätta orsaken, stäm av ekonomiska och fysiska effekter och verifiera det berörda flödet.
+6. Återöppna i begränsad omfattning med namngiven ansvarig. Registrera kvarstående avvikelser och relevant regression.
+26 4 Klart när
+Ett simulerat integrationsavbrott ger rätt larm, synlig arbetslista och säker stopprutin.
+Ett fastnat bakgrundsjobb upptäcks och återtas utan dubbel affärseffekt.
+Pilotpersonalen kan följa reservrutinen och köparen kan förstå köpets faktiska status.
+27 Backup återställning och kontinuitet
+27 1 Syfte
+Återställning ska återföra ett sammanhängande och säkert systemläge. Externa fakturor, utskick, utlämnade varor och senare säkerhetsbeslut kan finnas kvar även om den lokala databasen återställs till en äldre tidpunkt.
+27 2 Bindande krav
+SEC-2701: Backupregistret ska ange databas, dokumentfiler, identitetsdata, nödvändig konfiguration, versionsreferenser och ansvar för nycklar. Faktisk omfattning ska kontrolleras per vald tjänst. En databasbackup får inte antas innehålla alla externa filer eller identitetsleverantörens tillstånd.
+SEC-2702: Backup ska skyddas från vanlig applikationsåtkomst och ha beslutade livslängder, åtkomstloggning och återställningsansvar. Återläsning ska övas i en kontrollerad miljö och mätas mot pilotens fastställda RTO och RPO.
+SEC-2703: Nya köp, utlämningar och utgående effektgivande jobb ska kunna hållas stoppade under återställning. Återställd trafik ska inte släppas fram enbart för att applikationen startar.
+SEC-2704: Återhämtningsunderlaget ska kunna identifiera senare spärrar, borttagna medlemskap, sänkta kreditgränser, sessionsåterkallelser och raderingsbeslut. Välj en verifierad källa utanför den återlästa historiken eller tillämpa ett säkert stopp och rekonstruera berört tillstånd.
+SEC-2705: Förbrukade inbjudningar, återställningsbevis och andra engångsbevis ska inte återbli giltiga genom återläsning. Återtillämpa förbrukning eller ogiltigförklara berörda äldre bevis enligt leverantörens stödda modell.
+SEC-2706: Berörda äldre utlämningskoder ska ogiltigförklaras före återöppning. Faktiskt utlämnade mängder ska stämmas av mot bevarade utlämningsunderlag och butikens bekräftelser innan nya koder utfärdas. En extern faktura är inte ensam fullständigt bevis på fysisk utlämning.
+SEC-2707: Externa order, fakturor, krediteringar, betalningsstatus och utskick ska avstämmas med sina stabila referenser. Köade uppdrag med okänt utfall ska inte återköras blint. Säkerställd exponering ska återställas utan dubbelräkning eller lucka.
+SEC-2708: Tenantåterställning i delad drift ska ha ett dokumenterat och verifierat förfarande som bevarar andra handlares data och gemensam integritet. Separat identitets-, tenant- och databasåterställning ska dokumenteras som olika operationer.
+27 3 Återställningsordning
+1. Registrera incident och välj återställningspunkt med känd omfattning och versionsläge.
+2. Isolera berörd miljö och pausa externa effekter. Säkra aktuellt underlag som behövs för efterföljande avstämning.
+3. Återläs data, filer och rätt konfiguration. Kontrollera schema, kodkompatibilitet, relationer och handlarisolering.
+4. Återsäkra behörigheter, kreditbegränsningar, engångsbevis och tidigare gallringsbeslut.
+5. Stäm av fysiska utlämningar och externa ekonomiska effekter. Lägg ofullständigt utredda objekt i handläggning.
+6. Återstarta läsning, nya affärshandlingar och effektgivande jobb i kontrollerad ordning. Registrera verifiering och återöppningsbeslut.
+27 4 Klart när
+Återställningsprov omfattar backup följd av spärr, limitsänkning, förbrukad kod och extern order före återläsningen.
+Provet visar att ingen gammal rättighet eller kod återaktiveras och att extern order inte skapas igen.
+Återställningstid, känd dataförlust och kvarstående manuella åtgärder redovisas mot de beslutade målen.
+28 Release provisionering och white label drift
+28 1 Arbetsbeslut
+Standarderbjudandet använder gemensam drift på Vercel och Supabase med separat handlaridentitet, domän, profil, dataåtkomst och integrationskonfiguration. Bakgrundsarbete körs genom Vercel Workflows; Railway ingår inte. Dedikerad databas eller full driftmiljö är ett uttryckligt tillval. Båda använder samma produkt och versionsstyrda migrationshistorik. Konton, regioner och testad driftkonfiguration fastställs före pilotens provisionering.
+28 2 Bindande krav
+SEC-2801: Installationsregistret ska ange handlare, driftmodell, miljö, kanonisk domän, juridisk säljare, webbversion, API-version, kontraktsversion, schemaversion, konfigurationsversion och anslutningar. Registret ska skilja önskat läge från observerat verifierat läge.
+SEC-2802: Provisionering ska vara ett återupptagbart flöde med spårbara steg. En delvis skapad miljö får inte markeras aktiv. Nya miljöer ska sakna produktionsåtkomst tills identitet, isolering, profil och anslutningar har kontrollerats.
+SEC-2803: Domänägande ska verifieras före bindning till handlare och användning i autentiseringslänkar. TLS, godkända returadresser, CORS, manifest, supportadress och avsändardomän ska ingå i onboarding. Felaktig profil får inte tyst ersättas med en annan handlares profil.
+SEC-2804: Dedikerade installationer ska registrera migrationsstatus, avvikande konfiguration, uppdateringsfönster och återställningsansvar. Kundspecifika kodforkar ingår inte i standardmodellen. Anpassningar ska hanteras genom kontrollerad konfiguration eller en separat bedömd produktfunktion.
+SEC-2805: Releasepaketet ska binda samman båda reponas commits, API-kontrakt, schema, relevanta mallversioner och konfiguration. Kompatibilitet ska provas för kvarvarande äldre PWA-klienter och köade jobb. En webbdeploy får inte utföra databasens migrationer.
+SEC-2806: Schemaändringar ska införas kompatibelt innan beroende klienter uppdateras. Tillbakagång av applikationskod ska ha en känd datakompatibilitet eller reparationsväg. Kodrollback ska inte beskrivas som återställning av redan utförda affärer.
+SEC-2807: Service worker och cache ska ha versionsstyrd uppdatering som bevarar köpets serverstatus. Akut spärr av äldre klient ska ge begriplig hjälp och statusåterhämtning. Den får inte starta ett nytt köp som ersättning för ett okänt gammalt utfall.
+SEC-2808: Funktionsaktivering och säkerhetsbehörighet ska kontrolleras separat. Ett abonnemang eller en feature flag ska inte ge användaren ett nytt ekonomiskt mandat. Säkerhetsrättelser ska kunna rullas ut med dokumenterad prioritet i samtliga aktiva installationer.
+28 3 Releaseflöde och klart när
+1. Bygg och verifiera ett identifierat releasepaket i testmiljö med representativa data.
+2. Kontrollera migrationsordning, backupbehov, gamla jobb och externa kopplingar.
+3. Uppdatera begränsad målmiljö och kontrollera köp, nekad åtkomst, dokument och jobb.
+4. Följ larm och avstämning innan nästa installation uppdateras. Avbryt utrullning vid bruten isolering eller oklar ekonomisk effekt.
+5. Registrera faktiskt versionsläge och kvarstående avvikelser.
+Leveransen är klar när en andra handlare kan provisioneras med korrekt profil och åtskilda data genom samma dokumenterade process, och när en uppdatering kan följas genom båda repona till verifierat beteende.
+29 Export avslut och leverantörsbyte
+29 1 Syfte
+En handlare ska kunna lämna tjänsten utan att accepterade affärer tappas bort eller andra handlares data följer med. Avslut av tjänst, stängning av personkonto och radering ska hanteras som olika processer.
+29 2 Bindande krav
+SEC-2901: Handlarens avslut ska ha tillstånden aktiv, försäljning pausad, avslut under handläggning och avslutad, med tillåtna handlingar per tillstånd. Exakta API-värden fastställs i kontraktet. Ett avslut ska ha ansvarig, orsak och mål för slutavstämning.
+SEC-2902: Nya köp och kundaktiveringar ska stoppas först. Accepterade order, kvarvarande utlämningar, returer, ekonomiska korrigeringar och osäkra överföringar ska inventeras och få ansvarig innan kvarvarande anslutningar avvecklas.
+SEC-2903: Export ska begäras av behörig mottagare och avgränsas till rätt handlare och omfattning. Format, schema, dokumentförteckning, referenser, kontrollsummor och exporttidpunkt ska beskrivas. Exporten ska kunna förstås utan intern databaskännedom.
+SEC-2904: Export ska skapas i bakgrunden med skyddad åtkomst och beslutad giltighet. Delvis misslyckad export ska inte märkas komplett. Personuppgifter, kreditunderlag och andra begränsade data ska omfattas av respektive beslutade utlämningsrätt.
+SEC-2905: Webhooks, kreditbevakning, nycklar, avsändare och domäner ska avvecklas i ordning som bevarar nödvändiga återrapporter. Stängning av appen ska inte lämna en aktiv betald bevakning eller en oanvänd privilegierad nyckel utan ägare.
+SEC-2906: Kvarvarande historik ska ha beslutad åtkomst, retention och ansvar efter avslut. Kunden ska få information om exportväg och vad som avslutas enligt faktiska avtal. Inga nya uppsägningstider eller bevarandelöften skapas genom denna plan.
+SEC-2907: Byte av affärssystem ska ha en brytpunkt och inventering av gamla externa referenser, fakturor, reservationer och jobb. Ett äldre uppdrag ska behålla ursprunglig anslutning och får inte automatiskt bli en ny affär i det nya systemet.
+29 3 Avsluts och bytesflöde
+1. Verifiera begäran och registrera avtalsmässig och teknisk omfattning.
+2. Pausa nya affärer och informera berörda administratörer om kvarvarande arbetsuppgifter.
+3. Stäm av orderrader, utlämningar, fakturor, krediteringar och exponering. Utred okända externa utfall.
+4. Skapa avgränsad export och kontrollera innehåll, dokumentreferenser och mottagare.
+5. Återkalla behörigheter och avveckla kopplingar när deras kvarvarande uppdrag är hanterade. Samordna domänbyte med installerade PWA:er och gamla länkar.
+6. Verkställ beslutad retention och gallring. Dokumentera slutläge och kvarvarande bevarandeansvar.
+29 4 Klart när
+Ett testavslut stoppar nya köp men tillåter behörig slutavstämning av en accepterad order och osäker fakturaöverföring.
+Exporten är tenantisolerad och användbar; en obehörig eller felaktig mottagare nekas.
+Ett integrationsbyte visar att gamla uppdrag behåller rätt mål och att avvecklade nycklar och webhooks inte fortsätter användas.
+30 Styrfiler dokumentation och återupptagning
+Denna plan beskriver avsedd produkt och arbete som återstår. Den är inte bevis för att funktioner, integrationer eller skydd finns i kod. AGENTS.md version 2.0.0 styr hur agenten arbetar. ENGINEERING_​STANDARD.​md version 2.0.0 anger den gemensamma byggstandarden. SKILLS_​CATALOG.​md version 2.0.0 är granskat beslutsunderlag för arbetsstöd. Projektets konkreta affärsbeslut och observerade tillstånd dokumenteras separat. Standardens proportionalitet gäller: varje område bedöms mot uppdragets risk och produktens faktiska behov.
+En källa för varje uppgift
+Gemensam masterplan, systembeslut, regelägarskap, databasens migrationshistorik och API-kontrakt har sin auktoritativa plats i scan-api. Dokumentationen finns under scan-api/docs/; migrationer och kontraktskällor ligger i backendrepots avsedda kataloger och länkas från dokumentationen. scan-web har egen aktuell projektstatus och egna beslut om klienten. Webbrepot refererar till en bestämd backendrevision eller levererad dokumentbaseline. Båda repona ska kunna installeras och byggas självständigt; dokumentationskopplingen skapar inget krav på en lokal checkout av det andra repot.
+Krav
+Dokument eller handling
+Regel
+DEL-3001
+Projektkontext
+Bekräftad stack, domängränser, kommandon, integrationer och källor i docs/​PROJECT_​CONTEXT.​md.
+DEL-3002
+Aktuellt läge
+Kort docs/​PROJECT_​STATE.​md per repo med mål, kodläge, miljö, öppna fynd och nästa handling.
+DEL-3003
+Bestående beslut
+Gemensamma beslut i backendrepots docs/​DECISIONS.​md; webbens lokala beslut länkar relevanta systembeslut.
+DEL-3004
+Större arbetsuppdrag
+Ett avgränsat docs/​work/​<id>.​md med plan, fynd, ansvar och verifiering.
+DEL-3005
+Instruktionspaket
+Fungerande relativa länkar till styrfiler och medföljande mallar; ingen obligatorisk länk får sakna mål.
+
+Krav, priser, statustransitioner och permissions ska inte handredigeras i parallella kataloger. API-repot äger definitionerna; webbens representation genereras eller levereras med versionskontroll. En dokumentbaseline anger ursprung, revision och eventuell lokal avvikelse. Uppdatering av gemensam standard är en separat ändring och görs inte för att dölja en projektspecifik avvikelse.
+Checkpoint som går att återuppta
+DEL-3006 kräver checkpoint efter betydande beslut, fynd, implementeringssteg och verifiering samt före planerad överlämning. Anteckningen ska ange berörda repon, brancher och commits, relevant ocommittat arbete, databas-/migrationsversion, API-kontraktsversion, konfigurationsrevision och miljö. Hemliga konfigurationsvärden sparas inte. Testresultat kopplas till just denna kombination; en lyckad lokal kontroll säger inget om en annan deploy.
+Dokumentationsstatus är ej bedömt, planerat, pågår, implementerat, verifierat, blockerat eller inte tillämpligt. Driftstatus dokumenteras separat. Verifierat kräver evidens; inte tillämpligt kräver motivering. Externa operationer med okänt utfall registreras med referens och kontrollmetod innan omförsök.
+Vid ny session läser agenten instruktioner, kontext, status, relevanta beslut och aktivt arbetsdokument. Agenten kontrollerar faktisk diff, artefakter och vid behov målmiljö, utreder okända externa utfall och fortsätter från första otillräckligt verifierade steg. En ansvarig agent sammanför gemensam status vid parallellt arbete. Gate G30: en annan agent ska kunna ange verifierat läge, begränsningar och nästa handling utan att gissa; E2E-300 verifierar dokumentlänkar och E2E-301 provar överlämning mot verkligt kodläge.
+31 Selektiv open source och skills
+Open source används för avgränsade behov som streckkodsavläsning, klienttransport eller en lämplig behörighetsmotor. Affärsregler, mandat, kreditexponering och tenantisolering förblir produktens ansvar. Planens kandidater är inte beslut om installation eller bevis för att enskilda filer har granskats.
+Kandidater och beslut
+Kandidat
+Möjlig användning
+Kvar före införande
+Medusa B2B Starter
+Referens och eventuellt begränsat urval för företagsmedlemskap eller attest.
+Exakt revision, filer, beroenden, licensvillkor och kostnad för anpassning.
+Casbin för Node.js
+Möjlig motor bakom produktens eget behörighetsgränssnitt.
+Bevisa stöd för vald mandatmodell; objekt- och statusvillkor behöver fortsatt tydlig ägare.
+ZXing-C++ med lämplig webbpaketering
+Kandidat för kamerabaserad avläsning.
+Webbpaket, beroenden, licenser, storlek och praktisk prestanda på pilottelefoner.
+Vendure och ERPNext
+Referenser för verksamhetsflöden.
+Separat bedömning innan någon kod kopieras.
+Enterprise-delar
+Ingen del av grundurvalet.
+Uttryckligt behov och verifierade rättigheter innan eventuell användning.
+
+DEL-3101 kräver att ett versionslåst bibliotek prövas före en egen fork när det täcker behovet. Faktisk portning ska ta den minsta sammanhängande delen. Om urvalet drar med sig ett helt ramverk väljs en mindre komponent eller en egen avgränsad implementation. Ett välkänt projektnamn eller en publik källkodslänk avgör inte rättigheterna för varje katalog, bilaga eller beroende.
+DEL-3102 kräver ett portmanifest med ursprungsrepo, commit, filurval, upphovsrätts- och licensunderlag, notices, beroenden, lokala ändringar och ansvarig för underhåll. Manifestet anger också vad som uttryckligen inte tagits in. Kopierade funktioner måste anpassas till handlargränser, autentiserad aktör, exakta belopp och produktens transaktionsmodell innan de används i ett verkligt köp.
+Skills ska hjälpa ett valt arbetssätt
+DEL-3103 väljer få relevanta skills per arbetsuppdrag. Databasskill används vid schema, SQL, RLS och migrationer; React-relaterat stöd vid berörd klientkod; tillgänglighetsstöd vid användarflöden. Det är arbetsval utifrån uppgiften. Katalogens närvaro är ingen installationsorder.
+DEL-3104 kräver en ledande E2E-samordnare. En kompletterande skill får bidra med riktade kontroller men inte starta ett parallellt projektminne eller en konkurrerande huvudprocess. Filbaserade planeringsverktyg ska använda dokumentansvaret i kapitel 30. Verktyg som Playwright och databastestning gör det faktiska verifieringsarbetet; aktiverade skillnamn är ingen testevidens.
+Vid införande registreras ursprung, exakt katalog, commit, licensunderlag, granskningsdatum och lokal anpassning. Skript, hooks, nätverksmål och dynamiskt hämtade regler granskas före körning. Externa instruktioner får inte utöka uppdrag eller åtkomst. Uppdateringar granskas som diffar och verifieras där beteendet påverkas; gamla licensbedömningar återanvänds inte blint för nya revisioner.
+Gate G31: varje införd komponent har verifierbart ursprung, avgränsat syfte och underhållsansvar. E2E-310 provar den valda läsaren på faktiska etiketter och telefoner. E2E-311 verifierar att en portad del respekterar tillåtna och nekade aktörer, handlargränser och relevanta affärsinvariants. Om ingen portning behövs markeras testet som inte tillämpligt med skäl.
+32 Kravregister och spårbar verifiering
+Kravregistret gör denna plan genomförbar. DEL-3201 kräver stabila krav-ID:n, en auktoritativ regelägare, prioritet, leveransetapp, tillämplighet och kopplad verifiering. Kapitlens krav-ID:n kompletteras när implementationen preciseras; de ersätter inte konkreta kontrakt och databasregler. Ett krav får flera testfall när risken kräver det, och samma test kan verifiera flera krav utan att köras dubbelt.
+Register och evidens
+Registerfält
+Betydelse
+Krav och källa
+ID, beteende, beslutsreferens och fast krav eller arbetsbeslut.
+Ägare och gräns
+Domänoperation samt vilka API-, databas- och klientvägar som berörs.
+Leveransstatus
+Planerat, implementerat, verifierat, blockerat eller motiverat ej tillämpligt.
+Test och resultat
+Test-ID, förväntat utfall, observerat resultat och skyddad evidensreferens.
+Testad kombination
+Webbcommit, API-commit, schema, kontrakt, konfigurationsrevision och miljö.
+
+DEL-3202 kräver att kritiska mutationer verifieras genom verkliga API-ingångar och faktisk databas under de roller som applikationen använder. Test med databasägare eller en mockad policy bevisar inte att RLS, grants, funktioner, triggers och indirekta beroenden fungerar. Relevanta huvudresor verifieras dessutom i webben. Klientens synliga besked ska stämma med bestående affärsstatus.
+Minsta sammanhängande testmatris
+Test-ID
+Scenario
+Nödvändigt bevis
+E2E-320
+Tillåtet köp och nekat köp.
+UI-besked, API-resultat och bestående order-/reservationsstatus stämmer.
+E2E-321
+Annan handlare eller köpare, fel objekt och manipulerad aktör.
+Nekad åtkomst även för dokument, export och alternativa skrivvägar.
+E2E-322
+Spärr, återkallat mandat och otillåten rolltilldelning.
+Gammal session ger ingen fortsatt känslig rättighet.
+E2E-323
+Samtidiga köp och omförsök.
+Kredit, interna budgetar och engångshändelser håller utan dubbel effekt.
+E2E-324
+ERP-timeout efter genomförd extern operation.
+Extern referens hittas; ingen ny order eller faktura skapas blint.
+E2E-325
+Fel före respektive efter lokal commit.
+Ingen halv affär före commit; återhämtning via beständigt uppdrag efter commit.
+E2E-326
+Delutlämning, annullering och retur.
+Kvantiteter, dokument, lager och ekonomisk exponering kan stämmas av.
+E2E-327
+API- och schemauppgradering.
+Äldre stödd klient och köat jobb fungerar enligt kompatibilitetsbeslut.
+
+DEL-3203 kräver separata testkonton och syntetiska data där verkliga uppgifter inte behövs. Testutskick får avsedd mottagare och miljö. Produktionshändelser eller kreditupplysningar används bara när det ingår i ett faktiskt auktoriserat prov.
+DEL-3204 kräver att konstaterade fel får stabilt fynd-ID med observerat/förväntat beteende, konsekvens, evidens, ansvarig och nästa steg. Ett fall får inte ändras till godkänt för att matcha felaktig kod. Rättelsen verifieras där orsaken finns, och relevant sammanhängande flöde körs om.
+Gate G32: kritiska krav har tillräcklig evidens i den kombination som ska levereras. En build, en grön mockad svit eller antalet tester räcker inte. Blockerade delmoment redovisas med omfattning och skäl; oberoende arbete får fortsätta.
+33 Byggordning och leveranspaket
+Byggordningen begränsar osäkerhet tidigt. Två separata repon och PWA per handlare är fasta användarkrav. Teknikval, driftmodell och leverantörer som ännu inte beslutats är arbetsbeslut. Tider och priser uppskattas först när pilotens integration och ambitionsnivå är kända.
+Etapper med tydliga utgångar
+Etapp
+Leverans
+Gate
+0 Verklig förmåga
+Pilotflöde, ERP-kapacitetsprov, kreditmodell och dataägarskap.
+G33-0: avgörande förmågor är demonstrerade eller ersatta av beslutad, provad reservmodell.
+1 Grund och mobilprov
+Självständiga byggkedjor, dokumentpaket, identitetskontrakt, två testhandlare och skanningsprov.
+G33-1: isolering, installation, kamera och återupptagning visas på pilotens telefoner.
+2 Första köp
+Artikeluppslag till kundbekräftelse, attest, reservation, order och beständiga uppdrag.
+G33-2: tillåtet köp, nekat köp, spärr och omförsök fungerar i sammanhängande test.
+3 Verkliga kopplingar
+ERP, Creditsafe enligt valt avtal, synk och avstämning.
+G33-3: normalfall, avbrott och osäkert externt utfall hanteras.
+4 Hela affären
+Utlämning, dokument, fakturareferens, annullering och retur.
+G33-4: beställt, utlämnat och fakturerat kan stämmas av.
+5 Drift och onboarding
+Profil, domän, konto-/stödflöden, juridisk information, larm, restore och export.
+G33-5: andra handlaren ansluts med konfiguration och godkända kopplingar.
+6 Butikspilot
+Begränsad verklig drift med tränad personal och fastställda kriterier.
+G34: pilotens kritiska krav är verifierade.
+
+DEL-3301 gör etapp 0 till ett praktiskt prov, inte enbart dokumentläsning. Provet kontrollerar kundpris, artikel/enhet, orderreferens, kreditreservation eller avskild budget, faktureringsgrund, delmängder och korrigeringar. Om kassa och andra kanaler delar kredit ska deras deltagande i vald modell demonstreras. En testadapter får inte ensam bevisa en extern förmåga.
+Gränssnitt, kontraktsutkast, syntetiska data och mobilprov kan utvecklas parallellt. Full domänimplementation som beror på en obevisad ERP-förmåga väntar tills den gränsen är klar. Saknat Creditsafe-testkonto blockerar den verkliga kreditkopplingen, men behöver inte stoppa kameratest eller dokumentrendering. Planerade funktioner som den valda adaptern inte säkert stöder ska visas som otillgängliga, inte simuleras i verklig butik.
+DEL-3302 kräver leveranspaket per etapp: kodrevisioner, schema- och kontraktsversion, konfigurationskrav utan hemligheter, migrationsordning, verifiering, öppna fynd och nästa handling. Backend äger migreringar. Webbdeploy ändrar inte databasen. Kompatibilitet införs före konsumentbyte och gammalt stöd avvecklas först enligt dokumenterat beslut.
+DEL-3303 avgränsar piloten till bemannad butik, svenska aktiebolag, SEK, svenska och onlinegodkända fakturaköp som arbetsbeslut tills pilotprofilen fastställts. Datamodellen ska tåla flera butiker, delutlämning och delretur. Det innebär inte att avancerad lagerstyrning byggs nu. Nativeapp, obemannad butik, offlinekredit, automatiska kreditbeslut och nya betalmetoder har egna beslut och verifieringsbehov.
+E2E-330 provar den verkliga kapacitetsprofilen. E2E-331 verifierar fristående installation och bygge av vardera repo med versionslåsta kontraktsartefakter. E2E-332 följer det första sammanhängande köpet genom klient, API, databas och bakgrundsjobb. Utvecklingsarbetets nästa etapp avgörs av dessa observerade resultat.
+34 Pilotdrift och godkännandekriterier
+Pilotprofilen är ett konkret driftbeslut med handlare, säljande bolag, butiker, sortiment, deltagande kundkonton, kreditmodell, testade telefoner, integrationsversioner och ansvariga personer. DEL-3401 kräver att kvarvarande antaganden blir synliga före verkliga köp. Volym, svarstidsmål, återställningstid och tillåten dataförlust fastställs utifrån pilotens behov och kostnadsram och verifieras innan de lovas externt.
+Godkännande före start
+Område
+Kriterium
+Behörighet
+Handlare och köpare är isolerade; relevanta spärrar, delegationsgränser och dokumentåtkomst fungerar.
+Köp och ekonomi
+Bekräftat underlag, kredit och interna budgetar håller; omförsök skapar ingen dubbel affär.
+Fysiskt flöde
+Personalen vet när varor får lämnas ut; delmängder och förbrukad utlämningskod hanteras korrekt.
+Integration
+Okänt utfall syns som kontrollbehov och kan stämmas av mot huvudsystemet.
+Stödflöden
+Inbjudan, inloggning, återställning och relevanta kontakt-/säkerhetsändringar fungerar.
+Information
+Rätt villkor, integritetsinformation, ansvariga parter och faktisk cookie-/lagringsmodell är dokumenterade.
+Drift
+Nåbara larm, avvikelseansvar, stoppfunktion och praktiskt verifierad återställning finns.
+
+DEL-3402 kräver en övad reservrutin. Personal ska kunna stoppa nya kreditköp och ta över ett ärende utan att kringgå kreditauktoriteten. Kunden ska förstå skillnaden mellan nekat, väntande och accepterat köp. Redan säkrad affär hanteras enligt beslutade utlämningsvillkor. Ett generellt tekniskt fel är aldrig ett automatiskt utlämningsgodkännande.
+DEL-3403 kräver ansvarig mottagare för varje verksamhetslarm och avvikelsekategori. Övervakning omfattar minst misslyckade köp, fastnade reservationer, integrationsjobbens ålder, osäkra orderutfall, dokumentfel, e-poststuds och ekonomiska differenser. Pilotens observationsnivåer bestäms i profilen; planen hittar inte på fasta procentsatser.
+Prov som kompletterar köpflödet
+E2E-340: verkliga etiketter, iPhone och Android, kameranekande, bakgrundsläge, nätavbrott och återupptagning utan ny order.
+E2E-341: inbjudan, kontaktbyte, förlorad vald autentiseringsfaktor, relevant sessionsåterkallelse och kontobyte utan nytt mandat.
+E2E-342: privat dokument, export och rättighetsärende följer beslutad åtkomst och bevaring; cookie-/lagringsbeteende motsvarar inventeringen.
+E2E-343: backup återläses med dokument och konfiguration; externa order, fakturor och utskick stäms av före återstart.
+E2E-344: återställning återinför inte obemärkt spärrade konton, återkallade mandat, förbrukade säkerhetsbevis eller tidigare beslutade raderingar i aktiv behandling.
+E2E-345: incidentövning visar vem som stoppar, utreder, informerar och godkänner återupptagen försäljning inom sitt mandat.
+DEL-3404 kräver uttryckligt pilotutlåtande: verifierat, blockerat eller verifierat med avgränsade accepterade avvikelser. Bruten isolering, osäkrad kredit eller oförklarad ekonomisk differens blockerar berörd verklig försäljning och utökning. Ett mindre dokumenterat UI-fel behöver inte stoppa oberoende prov. Beslutet knyts till testad kombination, omfattning, kvarvarande risk, ansvarig och nästa kontroll. Gate G34: piloten får börja när kritiska vägar fungerar och personalens faktiska rutin motsvarar systemets beslut.
+35 Kostnader förvaltning och kommersiellt ansvar
+Kostnaden styrs av driftmodell, antal handlare och butiker, aktiva användare, köpvolym, dokumentmängd, upplysningar, integrationernas villkor och supportbehov. Inga belopp, leveranstider eller externa avtalsvillkor i denna plan är offerter. DEL-3501 kräver en kalkyl med tydliga antaganden och källor innan pris eller servicenivå utlovas.
+En användbar periodkalkyl är:
+Total kostnad = gemensam fast drift + summa handlarens fasta kostnader + summa volym × verifierat enhetspris + supportarbete + reserverat underhåll.​
+Beräkna uppstart separat: onboarding, domän, datakartläggning, import, anpassad integration, utbildning och verifiering. Intern arbetstid ska synas även när ingen extern faktura uppstår. Räkna med lagring och återställningsprov, inte endast databasens normala månadskostnad. Kalkylen ska visa vad som händer vid större dokumentarkiv, fler butiker eller fler kreditbevakningar.
+Kostnad och ansvar per relation
+Område
+Att klarlägga
+ERP
+API-rättighet, kvot, testmiljö, återrapportering, debitering och ägare av anslutningen.
+Kreditunderlag
+Handlaravtal eller partnerupplägg, tillåtna mottagare, lagring och förbrukningskostnad.
+E-post och dokument
+Avsändaransvar, leveransfel, arkivering och vem som skickar fakturan.
+Separat drift
+Isoleringskrav, operativt ansvar, uppdateringar, backup och verifierad återhämtning.
+Support
+Kontaktväg, tillgänglighet, handlarens ansvar och avgränsning mot ERP-leverantören.
+Produktförvaltning
+Uppdateringar, beroenden, portad kod, regressioner och utfasning av API-versioner.
+
+DEL-3502 håller plattformens abonnemang och handlarens varuförsäljning åtskilda. Säljande handlare beslutar om kundkredit och sina affärsvillkor. Plattformens tekniska kontroll eller Creditsafe-underlag innebär inte en betalningsgaranti. Avtalens ansvar och eventuella servicenivåer behöver beslutas utifrån den faktiska tjänsten; de fylls inte med antagna standardlöften.
+DEL-3503 kräver en gemensam versionsstyrd produkt. White label är kontrollerad konfiguration. Handlarspecifik kod, separat driftsmiljö eller specialadapter ska ha dokumenterat syfte, underhållskostnad och testansvar. Separat drift får inte bli en oregistrerad fork som slutar få rättelser.
+DEL-3504 kräver förbrukningsgränser och insyn per handlare där externa anrop eller stora exporter kan skapa kostnad eller påverka andra kunder. Gränser ska ge begripligt besked och en hanterbar avvikelse. Ett abonnemang eller en fakturatvist får inte tyst radera affärshistorik eller sabotera avstämning av redan accepterade affärer; paus och avslut följer produktens definierade livscykel.
+E2E-350 verifierar mätning och avgränsning av relevant förbrukning. E2E-351 provar planerad uppdatering för gemensam respektive separat drift mot samma produktkrav. Gate G35: vald pilot har finansierbar drift, identifierade externa villkor och en namngiven förvaltningsägare. En större budget är inte ett krav att bygga fler funktioner; prioritera observerade problem i det fungerande flödet.
+36 Beslutsregister risker och första utvecklingsuppdrag
+DEL-3601 kräver att beslut skiljs från antaganden och faktiskt verifierad förmåga. Beslutsloggen anger ID, datum, status, omfattning, ägare, kort motivering, konsekvens och eventuell ersättande post. Ett öppet beslut blockerar bara de delar som kräver svaret. Reversibla teknikval kan tas som dokumenterade arbetsbeslut inom uppdraget.
+Beslut som ska synas från start
+Beslut
+Status vid denna plans framtagning
+Behöver konkretiseras
+Två fristående repon
+Fast användarkrav.
+Namn, åtkomst och byggkedjor.
+PWA per handlare
+Fast användarkrav.
+Domän, telefonstöd, profil och installationshjälp.
+Produktnamn och huvuddomän
+Beslutat av produktägaren: Plockivo och plockivo.com.
+Registrerat domänägande, DNS, TLS och central produktkonfiguration.
+API äger affärsregler
+Fast arkitekturriktning.
+Kontraktsdistribution och modulernas regelägare.
+Hosting och bakgrundsjobb
+Beslutat av produktägaren: Vercel och Supabase utan Railway.
+Två Vercelprojekt, miljöer, regioner, Workflow-version, kostnad och återställning.
+Identitet
+Supabase Auth är vald leverantör.
+Sessionskontrakt, inloggningssätt, MFA och säker återställning.
+Pilotens ERP och kreditauktoritet
+Öppet beroende.
+Verkligt kapacitetsprov och samtliga säljkanalers deltagande.
+Creditsafe och e-post
+Avsedda förmågor med öppna leverantörsvillkor.
+Avtal, produktåtkomst, testkonto och tillåten datahantering.
+Pilotens mått och ansvar
+Öppet verksamhetsbeslut.
+Volym, kvalitetsmål, avvikelseägare och stopp-/startmandat.
+
+DEL-3602 kräver riskregister med konkret felscenario, påverkan, förebyggande åtgärd, upptäckt, återhämtning och verifiering. De första riskerna är kredit som används samtidigt i flera kanaler, ERP med otillräcklig reservationsförmåga, osäkert externt utfall, fel enhet/pris, oavsiktlig åtkomst mellan handlare, uteblivet bakgrundsarbete och förlorad projektkontext. Riskernas sannolikhet och konsekvens bedöms efter pilotens faktiska förhållanden; de ges inga påhittade poäng.
+Första avgränsade utvecklingsuppdrag
+DEL-3603 definierar första uppdraget som en verifierbar grund med ett litet sammanhängande testflöde:
+1. Placera nåbara styrfiler och mallar, skapa projektkontext, status, beslut och kravregister i rätt repo.
+2. Kartlägg pilotens ERP och kör etapp 0:s kapacitetsprov. Registrera bevisade förmågor och kvarstående externa hinder.
+3. Skapa självständiga scan-api och scan-web med varsitt Vercelprojekt. Konfigurera Supabase, dokumentera identitetskontraktet och leverera ett versionslåst API-kontrakt. Lägg Workflows och outboxavstämning i scan-api; ingen Railwaytjänst skapas.
+4. Skapa två syntetiska handlare och minst två köparföretag hos en av dem. Visa tillåtna medlemskap och nekat korsåtkomstfall.
+5. Prova PWA-installation, kamera, manuell kod och återupptagning på verkliga pilottelefoner.
+6. Genomför artikeluppslag, bekräftat underlag, tillåten reservation och accepterad testorder med beständigt dokument-/meddelandeuppdrag.
+7. Visa nekat köp, spärrad användare, samtidigt köp, omförsök och markerat osäkert externt utfall. Använd tydligt avgränsad testadapter där verklig koppling ännu saknas.
+8. Dokumentera testad kombination, evidens, öppna fynd och nästa exakta utvecklingssteg.
+E2E-360 verifierar uppdragets hela resa. E2E-361 kontrollerar att en ny agent kan återuppta arbetet och skilja verklig integration från testadapter. Gate G36: grunden är klar när beteendet har demonstrerats och återstående begränsningar är spårbara. Detta är startpunkten för fortsatt produktbygge; det är inte ett påstående om att en färdig produktionstjänst finns.
+37 Källregister och kontroll av externa beroenden
+Så används källorna
+Produktens egna krav och arbetsbeslut står i respektive kapitel. En källhänvisning visar underlag för en teknisk mekanism eller leverantörsförmåga; den ersätter inte ett prov av vår egen implementation.
+Dokumentationen kontrollerades den 22 oktober 2026 för de länkar som anges nedan. Projektens exakta versioner, konton, produktåtkomst och avtalsrättigheter låses och kontrolleras vid införande.
+Funktioner i en publik produktkatalog betyder inte att de ingår i ett visst kundavtal.
+Länkar till current, main och produktguider kan förändras. Portning kräver faktisk commit och filurval i portmanifestet.
+Inga källor nedan fastställer pilotens pris, driftskostnad, leveranstid eller kommersiella ansvar.
+Databas och säkerhet
+SRC-01 PostgreSQL Row Security Policies. Underlag för skillnaden mellan grants, RLS, körroller och ägarskap. https:/​/​www.​postgresql.​org/​docs/​current/​ddl-​rowsecurity.​html
+SRC-02 PostgreSQL Transaction Isolation. Underlag för samtidighetsrisker och betydelsen av vald isolation och återförsök. https:/​/​www.​postgresql.​org/​docs/​current/​transaction-​iso.​html
+SRC-03 Supabase Row Level Security. Underlag för exponerade schemas, grants, policyer och privilegierade åtkomstvägar i den valda Supabasemiljön. https:/​/​supabase.​com/​docs/​guides/​database/​postgres/​row-​level-​security
+SRC-04 Supabase Database Backups. Kontrollera vad databasbackup innehåller och vilket separat skydd filer behöver. https:/​/​supabase.​com/​docs/​guides/​platform/​backups
+SRC-05 Supabase Changelog. Versionsberoende förändringar ska bedömas vid implementation. https:/​/​supabase.​com/​changelog
+SRC-06 OWASP Session Management Cheat Sheet. Underlag för sessionshantering och avgränsade cookies. https:/​/​cheatsheetseries.​owasp.​org/​cheatsheets/​Session_​Management_​Cheat_​Sheet.​html
+PWA skanning och integrationer
+SRC-07 MDN Making PWAs installable. Underlag för installation och behovet av plattformsanpassat beteende. https:/​/​developer.​mozilla.​org/​en-​US/​docs/​Web/​Progressive_​web_​apps/​Guides/​Making_​PWAs_​installable
+SRC-08 Google The service worker lifecycle. Underlag för att prova installation, aktivering och uppdatering som egna steg. https:/​/​web.​dev/​articles/​service-​worker-​lifecycle
+SRC-09 Ahlsell Scanning. Verksamhetsreferens för butikskod, artikelmängder, utcheckning och avstämningar. Detta är inte vår integrationsspecifikation. https:/​/​www.​ahlsell.​se/​handla-​hos-​oss/​ahlsell-​scanning-​app/​
+SRC-10 GS1 Sweden Vilken typ av streckkod ska jag ha. Underlag för att förpackningsnivå och streckkodstyp behöver kartläggas. https:/​/​gs1.​se/​support/​vilken-​typ-​av-​streckkod-​ska-​jag-​ha/​
+SRC-11 Creditsafe svenska API erbjudande. Underlag för vald leverantörsdialog och produktidentifiering. https:/​/​www.​creditsafe.​com/​se/​sv/​integration/​skraddarsydda-​losningar/​creditsafe-​api.​html
+SRC-12 Creditsafe Connect API Catalog. Produkter och specifikationer skiljs åt i katalogen; exakt åtkomst fastställs i integrationens avtal. https:/​/​doc.​creditsafe.​com/​connect-​catalog
+SRC-13 Resend Idempotency Keys. Leverantörens dokumenterade skyddsfönster är 24 timmar vid kontrollen. Produktens beständiga dubblettskydd och hantering av osäkert utfall behöver därför egen modell. https:/​/​resend.​com/​docs/​dashboard/​emails/​idempotency-​keys
+Integritet och återanvändning
+SRC-14 PTS Kakor. Underlag för inventering, nödvändiga kakor, aktivt val och återkallelse där samtycke krävs. https:/​/​pts.​se/​internet-​och-​telefoni/​kakor-​cookies/​
+SRC-15 Medusa B2B Starter. Kandidatens officiella källa. Exakta filer, licenser och beroenden granskas före eventuellt urval. https:/​/​github.​com/​medusajs/​b2b-​starter
+SRC-16 Casbin för Node.js. Kandidatens officiella källa. Vald modell och paketversion verifieras före införande. https:/​/​github.​com/​apache/​casbin-​node-​casbin
+SRC-17 ZXing-C++. Kandidatens officiella källa. Läsardel och webbpaketering ska bedömas som ett sammanhängande urval. https:/​/​github.​com/​zxing-​cpp/​zxing-​cpp
+Vercel och beständig jobbkörning
+SRC-18 Vercel Backends. Underlag för separat backendprojekt, funktionsdrift och anpassning från en ständigt körande server. https:/​/​vercel.​com/​docs/​frameworks/​backend
+SRC-19 Vercel Workflows. Underlag för beständiga steg, återförsök, återupptagning och regionsval. Exakt SDK-version, lagringsregion, retention och kontovillkor verifieras vid implementation. https:/​/​vercel.​com/​docs/​workflows
+SRC-20 Vercel Functions Limits. Faktiska tids-, minnes- och nyttolastgränser styr uppdelningen av jobb. https:/​/​vercel.​com/​docs/​functions/​limitations
+SRC-21 Vercel for Platforms. Underlag för handlarbundna subdomäner och verifierade kunddomäner på en centralt driven produkt. https:/​/​vercel.​com/​docs/​multi-​tenant
+Källspårning i genomförandet
+Ange källa, versionsdatum eller commit och vilken konkret regel eller adapterfunktion som stöds.
+Spara faktisk leverantörsspecifikation tillsammans med integrationsprofilens versionsreferens.
+Dokumentera skillnaden mellan leverantörens uppgivna förmåga och vårt observerade testresultat.
+Uppdatera kontrakt och relevanta tester när leverantörens beteende förändras.
+38 Pilotprofil och slutlig startkontroll
+Fyll i innan verkliga köp aktiveras
+PILOT-3801: Bekräfta produktnamnet Plockivo och huvuddomänen plockivo.com. Ange plattformsbolag och ansvarig produktägare samt verifiera domänägande och driftsatta adresser före pilotstart.
+PILOT-3802: Ange handlare, juridisk säljare, organisationsnummer och verifierade kontaktuppgifter.
+PILOT-3803: Ange butik, lager, öppettider, utlämningsplats och ansvarig butikschef.
+PILOT-3804: Ange deltagande köparföretag, externa kundnummer och verifierade administratörer.
+PILOT-3805: Ange godkänt sortiment och artiklar som kräver personal eller är uteslutna.
+PILOT-3806: Ange stödda streckkoder, enheter, mängdsteg och representativa etiketter för prov.
+PILOT-3807: Ange prisauktoritet, avrundningsprofil, avgifter och kundens visning av moms.
+PILOT-3808: Ange kreditauktoritet, samtliga berörda säljkanaler och hur reservationer samordnas.
+PILOT-3809: Ange befintlig exponering, kreditlimiter, budgetgrund och regler för återföring.
+PILOT-3810: Ange vad köpstopp och utlämningsstopp betyder och vem som får besluta om undantag.
+PILOT-3811: Ange attestregler, ersättare, giltighet och hantering av ändrat underlag.
+PILOT-3812: Ange vem som får acceptera kundvillkor och vilken dokumentversion som används.
+PILOT-3813: Ange när order accepteras och vilka externa besked som måste vara kända.
+PILOT-3814: Ange kontrollrutin, mottagarverifiering och regler för hämtombud.
+PILOT-3815: Ange fakturerbar händelse och provad radkoppling till ERP:s faktura och kredit.
+PILOT-3816: Ange fakturakanal, obligatoriska kundreferenser och vem som skickar fakturan.
+PILOT-3817: Ange rutiner för restmängd, annullering, retur, reklamation och osäkert utfall.
+PILOT-3818: Ange identitetsleverantör, inloggningssätt, obligatorisk MFA och säker återställning.
+PILOT-3819: Ange kanonisk appdomän, manifestidentitet och verifierad avsändardomän.
+PILOT-3820: Ange testade telefoner, operativsystem, webbläsare och manuell skanningsreservväg.
+PILOT-3821: Ange samtliga test- och produktionsanslutningar med behörighet och kostnadsgräns.
+PILOT-3822: Ange datakartans, villkorens, integritetsinformationens och cookieinventeringens versioner.
+PILOT-3823: Ange bevaranderegler, rättighetsärenden och ansvar för support och incidenter.
+PILOT-3824: Ange kapacitetsprofil, svarstidsmål, tillgänglighetsmål, RPO och RTO med mätmetod.
+PILOT-3825: Ange backupomfattning, senaste återställningsprov och hantering av senare säkerhetsbeslut.
+PILOT-3826: Ange avvikelseägare, larmmottagare, jour eller supporttider och eskaleringsväg.
+PILOT-3827: Ange stopp- och återstartmandat samt reservrutin för personalen.
+PILOT-3828: Ange testad webbcommit, API-commit, schema, kontrakt, konfigurationsrevision och miljö.
+PILOT-3829: Ange öppna fynd, blockerade flöden och avgränsade accepterade avvikelser.
+PILOT-3830: Ange pilotbeslutets ansvariga, datum, volymgräns och nästa uppföljning.
+Gemensam demonstrationsresa
+1. Bjud in en inköpare till ett verifierat kundkonto och visa rätt handlarprofil.
+2. Välj butik och projekt, skanna en förpackning och ange en tillåten decimalmängd.
+3. Visa avtalat kundpris, obligatorisk referens och eventuellt attestbehov.
+4. Genomför attest, återuppta underlaget och låt kunden slutligt bekräfta det.
+5. Reservera kredit och interna budgetar hos respektive auktoritet. Acceptera köpet först enligt beslutad modell.
+6. Bryt anslutningen efter möjlig orderacceptans. Visa att samma köpavsikt hittar samma order.
+7. Genomför personalkontroll. Lämna ut fyra av tio enheter och annullera sex genom behörigt flöde.
+8. Visa följesedel med fyra enheter, fakturerat underlag med samma källa och korrekt kvarvarande exponering.
+9. Ta emot en delretur. Visa att mottagning, beslut och extern kredit är skilda steg.
+10. Visa en nekad samtidig överdisposition, ett aktivt köpstopp och åtkomstförsök från annan handlare.
+11. Visa återställningsprovets resultat och hur personalen hanterar en avvikelse utan blind omkörning.
+12. Spara evidens och uppdatera projektstatus med verkligt resultat och nästa handling.
+Beslut om pilotstart
+Kritiska ekonomiska och säkerhetsrelaterade kriterier ska vara verifierade för den kombination som ska tas i drift.
+Oklara externa utfall ska vara avstämda eller avgränsade till objekt som förblir stoppade.
+Butikspersonal ska kunna följa rutinen utan att muntliga improvisationer ersätter systemets kontroller.
+Kvarvarande avvikelser ska ha ansvarig, konsekvens och nästa åtgärd. En avgränsad fungerande pilot får inte beskrivas som att samtliga framtida tillval är färdiga.
+Registrera beslutet i projektets befintliga besluts- och statusdokument. Fortsätt därefter enligt den fastställda uppföljningen.
