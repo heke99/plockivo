@@ -116,6 +116,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/carts/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["save_cart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carts/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_current_cart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/carts/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["submit_cart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -294,6 +342,50 @@ export interface components {
                 correlation_id: string;
             };
         };
+        CartInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            /** Format: uuid */
+            store_id: string;
+            /** Format: uuid */
+            project_id: string;
+            reference: string;
+            lines: {
+                /** Format: uuid */
+                product_id: string;
+                quantity: string;
+            }[];
+            id: string | null;
+            version: number;
+        };
+        CartSubmitInput: {
+            version: number;
+        };
+        Cart: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            /** Format: uuid */
+            store_id: string;
+            /** Format: uuid */
+            project_id: string;
+            version: number;
+            /** @enum {string} */
+            status: "draft" | "quoted" | "completed";
+            reference: string;
+            /** Format: date-time */
+            updated_at: string;
+            intent: components["schemas"]["Intent"] | null;
+            lines: {
+                product: components["schemas"]["Product"];
+                quantity: string;
+            }[];
+        };
     };
     responses: never;
     parameters: never;
@@ -321,7 +413,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["Context"];
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -429,7 +521,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["Product"][];
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -534,7 +626,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["History"][];
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -645,7 +737,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["Intent"];
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -752,7 +844,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["Intent"] | null;
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -865,7 +957,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["Confirmation"];
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -978,7 +1070,7 @@ export interface operations {
                     "application/json": {
                         data: components["schemas"]["ApprovalDecision"];
                         /** @constant */
-                        contract_version: "0.1.0";
+                        contract_version: "0.2.0";
                     };
                 };
             };
@@ -1085,6 +1177,340 @@ export interface operations {
                         version: string;
                         contract: string;
                     };
+                };
+            };
+        };
+    };
+    save_cart: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartInput"];
+            };
+        };
+        responses: {
+            /** @description Success; inspect business status. Test adapter only. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Cart"];
+                        /** @constant */
+                        contract_version: "0.2.0";
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Permission denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Business conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description JSON required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    get_current_cart: {
+        parameters: {
+            query: {
+                tenant_id: string;
+                customer_account_id: string;
+                store_id: string;
+                project_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Success; inspect business status. Test adapter only. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Cart"] | null;
+                        /** @constant */
+                        contract_version: "0.2.0";
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Permission denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Business conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description JSON required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    submit_cart: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartSubmitInput"];
+            };
+        };
+        responses: {
+            /** @description Success; inspect business status. Test adapter only. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["Intent"];
+                        /** @constant */
+                        contract_version: "0.2.0";
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Permission denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Business conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description JSON required */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Internal failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

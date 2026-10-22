@@ -1,6 +1,6 @@
 {
   "name": "plockivo-api",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3001",
@@ -11,7 +11,7 @@
     "standard": "python3 tools/engineering/check_standard.py --project .",
     "verify": "npm run standard && npm run typecheck && npm test && npm run build",
     "contract:generate": "openapi-typescript contracts/openapi.json -o contracts/generated.ts",
-    "db:test": "supabase db query --local --file tests/database.sql"
+    "db:test": "node tests/run-database.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",

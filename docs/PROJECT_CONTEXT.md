@@ -9,7 +9,7 @@ Produkt: white label B2B-självskanning för bemannade butiker. Källa: [masterp
 - [Kravregister](PRODUCT_REQUIREMENTS.md): varje krav-ID och verklig leveransstatus.
 - [Aktivt uppdrag](work/BOOTSTRAP-001.md): testmatris, fynd och kvarvarande arbete.
 - [Verifieringsrapport](VERIFICATION.md): faktiskt körda kontroller och begränsningar.
-- [API-kontrakt](../contracts/openapi.json): auktoritativ version 0.1.0.
+- [API-kontrakt](../contracts/openapi.json): auktoritativ version 0.2.0.
 - [Identitet och drift](IDENTITY_AND_OPERATIONS.md): session, integrationer, integritet och återställning.
 
 ## Verifierade resurser
@@ -30,7 +30,7 @@ Testprisadaptern är den enda implementationen; verklig ERP-auktoritet är **int
 
 Node 24 användes i byggmiljön. Låsta npm-beroenden och package-lock.json per repo. `npm ci`, `npm run typecheck`, `npm test`, `npm run build`, `npm run standard`, `npm run verify`. Lokal API-port 3001, webbport 3000. Lägg till `-- --hostname 127.0.0.1` vid nätverksbegränsad miljö.
 
-Databastest på en **tom isolerad testdatabas**: `npx supabase db query --local --file tests/database.sql`. Filerna innehåller syntetiska UUID:n och rollback. Kör inte samma fixture ovanpå en annan testkörnings kvarvarande fixtures. Docker behövs för lokal Supabase. I uppdraget kördes SQL via den anslutna utvecklingsdatabasen.
+Databastest på en **tom isolerad testdatabas**: `npm run db:test`. Filerna innehåller syntetiska UUID:n och rollback. Kör inte samma fixture ovanpå en annan testkörnings kvarvarande fixtures. Docker behövs för lokal Supabase. I uppdraget kördes SQL via den anslutna utvecklingsdatabasen.
 
 ## Kontrakt och beroenden
 

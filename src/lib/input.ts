@@ -5,3 +5,5 @@ export const confirmInput=z.object({version:z.number().int().positive(),quote_ha
 export const approvalInput=z.object({version:z.number().int().positive(),decision:z.enum(['approved','rejected'])}).strict();
 export const keyInput=z.string().min(16).max(128).regex(/^[a-zA-Z0-9:_-]+$/);
 export const idInput=uuid;
+export const cartInput=prepareInput.extend({id:uuid.nullable(),version:z.number().int().min(0),reference:z.string().trim().max(100),lines:z.array(prepareInput.shape.lines.element).max(100)}).strict();
+export const cartSubmitInput=z.object({version:z.number().int().positive()}).strict();

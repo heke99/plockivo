@@ -77,10 +77,10 @@ Varje ID är hämtat ur masterplanen. **Delvis** betyder att kod finns för grun
 | FLOW-1001 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
 | FLOW-1002 | Planerat | Bygg enligt masterplanens kapitel och kvarstående beroenden |
 | FLOW-1003 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
-| FLOW-1004 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
+| FLOW-1004 | Delvis verifierat i testmiljö | Sparad versionsstyrd serverkorg, återupptagning och quote-invalidation; se [CARTS-002](work/CARTS-002.md). Full pilot återstår |
 | FLOW-1005 | Planerat | Bygg enligt masterplanens kapitel och kvarstående beroenden |
 | FLOW-1006 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
-| FLOW-1007 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
+| FLOW-1007 | Delvis verifierat i testmiljö | Sparad versionsstyrd serverkorg, återupptagning och quote-invalidation; se [CARTS-002](work/CARTS-002.md). Full pilot återstår |
 | FLOW-1008 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
 | FLOW-1101 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
 | FLOW-1102 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |

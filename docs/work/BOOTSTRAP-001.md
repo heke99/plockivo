@@ -35,8 +35,8 @@ Permissions och ekonomisk transaktion: versionsstyrd SQL. Transport: API:s Zod-s
 - F006: Sen katalogrespons kan hamna efter mandatbyte. Webb avgränsar respons till aktivt medlemskap och låser byte under pågående kommando.
 - F007: Supabase/transport kunde vänta obegränsat. Tidsgränser införda; kunden instrueras kontrollera samma köp vid oklart svar.
 - F009: Vissa browseranrop saknade Origin; avgränsad same-origin metadata-/custom-headerkontroll och tre CSRF-regressionstester införda. Ordinarie logout är explicit local, återställning global.
-- F008: Public GitHub push stoppad av automatisk approval review. Ingen alternativ publicering utförd.
+- F008: Första publika pushen krävde uttryckligt godkännande. Godkännande inkom och API-grunden publicerades via GitHub-anslutningen.
 
 ## Kvarvarande arkitekturarbete
 
-Beständig redigerbar varukorg före underlag, per-person-periodbudget, robust generell integrationsinbox/outbox med unknown/avstämning, dokument-PDF/privat Storage, notismottagare och avsändare, verifierade domäner, MFA/inbjudan och full tilldelningsadministration. Återanvänd nuvarande domänoperationer; skapa inga alternativa ekonomiska CRUD-vägar.
+Beständig varukorg levereras i CARTS-002. Kvarstår: per-person-periodbudget, robust generell integrationsinbox/outbox med unknown/avstämning, dokument-PDF/privat Storage, notismottagare och avsändare, verifierade domäner, MFA/inbjudan och full tilldelningsadministration. Återanvänd nuvarande domänoperationer; skapa inga alternativa ekonomiska CRUD-vägar.
