@@ -9,7 +9,7 @@
 | D005 | 2026-10-22 | Genomfört | Låst offert med 15 min testgiltighet, separat attest och slutbekräftelse. Redigering skapar nytt underlag i detta inkrement; Versionsstyrd serverkorg och invalidation av tidigare underlag finns i 0.2.0. |
 | D006 | 2026-10-22 | Delvis | Vercel Workflow med beständig outbox och autentiserad återhämtningsscan implementerad. Worker skapar JSON-bevis; PDF/Storage och riktig e-post återstår. |
 | D007 | 2026-10-22 | Öppet | ERP, kreditauktoritet över andra kanaler, Creditsafe-produkt, säljbolag, pilotbutik, avsändare och juridisk information kräver verkligt pilotunderlag. |
-| D008 | 2026-10-22 | Godkänt och publicerat | Produktägaren godkände uttryckligen offentlig publicering och fortsatt arbete. API publicerat via GitHub-anslutningen; shell saknar GitHub-inloggning. Separat webb-repo saknas och kräver GitHub-inloggning för att skapa. |
+| D008 | 2026-10-22 | Godkänt och publicerat | Produktägaren godkände uttryckligen offentlig publicering och fortsatt arbete. API publicerat via GitHub-anslutningen; shell saknar GitHub-inloggning. Produktägaren skapade separat heke99/plockivo-web; webb 0.2.0 publicerad. |
 | D009 | 2026-10-22 | Genomfört | Ingen analys/marknadsföring. Host-only HttpOnly sessionskakor; ingen cookie delar session mellan handlardomäner. Cookieinformation ska följa verklig domänkonfiguration. |
 
 D010: Sparad korg ägs av personen och inköpssammanhanget. Versionskonflikter får inte skriva över en annan flik. En korgversion ger ett underlag; redigering invaliderar gammalt underlag atomiskt. Accepterat köp kräver ny korgidentitet.

@@ -38,7 +38,7 @@ Testpris och lokal kreditreservation bevisar inte samordnad kredit över en hand
 
 ## Observerade externa beroenden
 
-Leaked Password Protection måste aktiveras och verifieras i Supabase Auth före verkliga konton; ingen stödjande inställningsmutation fanns i anslutna verktyg. [Officiell konfiguration](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Offentlig publicering är nu uttryckligen godkänd; API-grunden är publicerad. GitHub-inloggning saknas i shell/browser för att skapa webb-repot.
+Leaked Password Protection måste aktiveras och verifieras i Supabase Auth före verkliga konton; ingen stödjande inställningsmutation fanns i anslutna verktyg. [Officiell konfiguration](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Offentlig publicering är nu uttryckligen godkänd; API-grunden är publicerad. Produktägaren har skapat heke99/plockivo-web och testad webb 0.2.0 är publicerad; webbens GitHub CI PASS.
 
 ## Slutkontroll och städning
 
@@ -47,3 +47,7 @@ Leaked Password Protection måste aktiveras och verifieras i Supabase Auth före
 ## CARTS-002 — 0.2.0
 
 Migration 20261022210808 tillämpad i utvecklingsprojektet. tests/carts.sql PASS med authenticated: sparande, tom korg, replay, annan person/samma konto, fel konto/tenant, återkallat mandat, gammal version, en quote per revision, invalidation och atomisk rollback vid felaktig mängd. Två samtidigt inskickade version-1-ändringar: en version 2, en VERSION_CONFLICT; ingen överskrivning. Browser PASS för sparad referens/mängd efter reload, underlag, order, återupptagen order och nästa tomma korg samt logout/mobil. Slutlig browseromkörning efter mandat-/logoutjustering PASS; inga pageerrors, host-only HttpOnly cookies, 401 efter logout och mobilvy utan overflow. Testdata städade: 0 handlare, order, korgar och E2E-identiteter. Produktionsrisker ovan kvarstår.
+
+## Separat webbpublicering
+
+Webbens kodcommit abbb0ed381d2473ec0125e0dac0dc2d5ed0df1f1 i heke99/plockivo-web motsvarar exakt lokalt testat Git-tree b16614bef95f048d84696700eba2a8c5b7166d87. [Webb-CI 39857451898](https://github.com/heke99/plockivo-web/actions/runs/39857451898) PASS: npm ci, standardkontroll, typkontroll, 4 tester och produktionsbygge. Ingen Verceldeploy. Endast dokumentation uppdateras efter denna kodcommit.
