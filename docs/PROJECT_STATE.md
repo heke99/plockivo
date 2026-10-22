@@ -21,8 +21,8 @@ Supabase cqznytuyutrqenbbyczc, utveckling med endast syntetiska testdata. Migrat
 
 ## Nästa exakta handling
 
-1. Slutför [CARTS-002](work/CARTS-002.md): ägd serverkorg, versionskontroll, en quote per revision, atomisk invalidation och ny korg efter order. SQL-rolltester och samtidiga ändringar passerar; slutlig browseromkörning och CI-status finns i verifieringsrapporten.
-2. Publicera uppdaterad API-kod via anslutningen. Shell saknar GitHub-inloggning. Skapa separat plockivo-web-repo: anslutningen saknar create-repository och GitHub-sidan kräver inloggning.
+1. [CARTS-002](work/CARTS-002.md) verifierat: ägd serverkorg, versionskontroll, en quote per revision, atomisk invalidation och ny korg efter order. SQL-rolltester, samtidiga ändringar, slutlig browseromkörning och GitHub CI passerar. API-kodcommit 0dd58b9; se verifieringsrapporten.
+2. API 0.2.0 är publicerat. Skapa separat plockivo-web-repo: anslutningen saknar create-repository; GitHub-sidan avvisade ett säkert inloggningsförsök med fel användarnamn/lösenord. Webbens testade källkod bevaras som separat ZIP.
 3. Provisionera separata Vercelprojekt och testmiljöer; konfigurera worker och verifiera Workflow-recovery. Webb får inga workerhemligheter.
 4. Fortsätt med inbjudan/MFA, handlarkonfiguration och verklig ERP-kapacitetsprofil. Därefter utlämningsanspråk, delutlämning/annullering, ekonomisk radallokering och returer.
 

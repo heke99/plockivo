@@ -26,11 +26,11 @@ Miljö: lokala produktionsbyggen av API och webb, Supabase utvecklingsprojekt cq
 | Verklig ERP/Creditsafe/e-post | BLOCKERAT | Avtal, produkt och testanslutning saknas |
 | Fysisk utlämning/faktura/retur | NOT RUN | Ej implementerade i denna grundleverans |
 | Backup/MFA/inbjudningar/domäner | NOT RUN | Återstår före pilot |
-| GitHub CI | Omgång 1 delvis godkänd | Quality och migrationsreplay PASS på 339123f; testscript rättat från db query till psql. Ny körning inväntas |
+| GitHub CI | PASS | [Körning 39856574892](https://github.com/heke99/plockivo/actions/runs/39856574892), kodcommit 0dd58b9a449115f87cf7199d949ded8f1d4da632: quality samt database PASS; alla fem migrationer och båda SQL-sviterna |
 
 ## Databas och migrering
 
-De fem lokala migrationsfilernas namn är synkade mot serverns migrationshistorik. Testerna körs under verkliga approller och provar förbjudna direktvägar, inte bara owner-anrop. Lokal Docker saknas i arbetsmiljön. GitHub CI:s första körning byggde om databasen från de fyra dåvarande migrationerna; quality PASS, testscript FAIL eftersom CLI db query inte stöder transaktionsskript. Testkommandot är rättat till psql i Supabase-containern; ny CI-körning inväntas. Inga riktiga kunddata eller utskick har använts. Manuell SQL-provisionering av auth-identitet användes endast för temporär isolerad testidentitet, inte som produktens onboarding.
+De fem lokala migrationsfilernas namn är synkade mot serverns migrationshistorik. Testerna körs under verkliga approller och provar förbjudna direktvägar, inte bara owner-anrop. Lokal Docker saknas i arbetsmiljön. GitHub CI:s första körning hittade att CLI db query inte stöder transaktionsskript. Efter rättning till psql i Supabase-containern passerade full replay av alla fem migrationer samt båda SQL-sviterna. Inga riktiga kunddata eller utskick har använts. Manuell SQL-provisionering av auth-identitet användes endast för temporär isolerad testidentitet, inte som produktens onboarding.
 
 ## Kvarstående produktionsrisker
 
