@@ -13,3 +13,5 @@
 | D009 | 2026-10-22 | Genomfört | Ingen analys/marknadsföring. Host-only HttpOnly sessionskakor; ingen cookie delar session mellan handlardomäner. Cookieinformation ska följa verklig domänkonfiguration. |
 
 D010: Sparad korg ägs av personen och inköpssammanhanget. Versionskonflikter får inte skriva över en annan flik. En korgversion ger ett underlag; redigering invaliderar gammalt underlag atomiskt. Accepterat köp kräver ny korgidentitet.
+
+D011: MFA-005 använder Supabase TOTP. MFA verkställs i SQL mot aktuella faktorer och levande aal2-session, inte bara i webbgränssnittet. Mandatkravet är globalt för personen när något aktivt mandat kräver MFA. Ingen automatisk faktoråterställning eller ny administrativ permission införs.

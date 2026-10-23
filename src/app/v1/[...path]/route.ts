@@ -42,9 +42,9 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
  }catch(error) {
   if(error instanceof SyntaxError||(error&&typeof error==='object'&&'issues'in error))return failure('VALIDATION_ERROR',correlation,400);
   const msg=error&&typeof error==='object'&&'message'in error?String(error.message):'';
-  const known=['PERMISSION_DENIED','NOT_FOUND','MEMBERSHIP_INACTIVE','VERSION_CONFLICT','IDEMPOTENCY_CONFLICT','CREDIT_UNAVAILABLE','APPROVAL_REQUIRED','PRICE_CHANGED','SALES_PAUSED','INTEGRATION_NOT_READY','BUDGET_EXCEEDED','VALIDATION_ERROR'];
+  const known=['MFA_REQUIRED','PERMISSION_DENIED','NOT_FOUND','MEMBERSHIP_INACTIVE','VERSION_CONFLICT','IDEMPOTENCY_CONFLICT','CREDIT_UNAVAILABLE','APPROVAL_REQUIRED','PRICE_CHANGED','SALES_PAUSED','INTEGRATION_NOT_READY','BUDGET_EXCEEDED','VALIDATION_ERROR'];
   const code=known.find(x=>msg===x);
-  return failure(code??'INTERNAL_ERROR',correlation,code==='NOT_FOUND'?404:code==='PERMISSION_DENIED'||code==='MEMBERSHIP_INACTIVE'?403:code?409:500);
+  return failure(code??'INTERNAL_ERROR',correlation,code==='NOT_FOUND'?404:code==='MFA_REQUIRED'||code==='PERMISSION_DENIED'||code==='MEMBERSHIP_INACTIVE'?403:code?409:500);
  }
 }
 export const GET=handle;

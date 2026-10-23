@@ -1,5 +1,5 @@
 export const messages: Record<string,string> = {
-  AUTH_REQUIRED:'Logga in för att fortsätta.', PERMISSION_DENIED:'Du saknar behörighet för den här handlingen.',
+  MFA_REQUIRED:'Bekräfta din inloggning med en engångskod.', AUTH_REQUIRED:'Logga in för att fortsätta.', PERMISSION_DENIED:'Du saknar behörighet för den här handlingen.',
   NOT_FOUND:'Underlaget kunde inte hittas.', MEMBERSHIP_INACTIVE:'Ditt inköpsmandat är inte aktivt.',
   VALIDATION_ERROR:'Kontrollera uppgifterna och försök igen.', VERSION_CONFLICT:'Underlaget har ändrats. Hämta den senaste versionen.',
   IDEMPOTENCY_CONFLICT:'Begäran har redan använts med ett annat innehåll.', CREDIT_UNAVAILABLE:'Kreditutrymmet räcker inte eller kontot är spärrat.',

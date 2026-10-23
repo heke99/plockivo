@@ -25,7 +25,7 @@ Miljö: lokala produktionsbyggen av API och webb, Supabase utvecklingsprojekt cq
 | Fysisk kamera/PWA-installation | NOT RUN | Verkliga pilottelefoner och etiketter återstår. |
 | Verklig ERP/Creditsafe/e-post | BLOCKERAT | Avtal, produkt och testanslutning saknas |
 | Fysisk utlämning/faktura/retur | NOT RUN | Ej implementerade i denna grundleverans |
-| Backup/MFA/inbjudningar/domäner | NOT RUN | Återstår före pilot |
+| Backup/inbjudningar/domäner | NOT RUN | Återstår före pilot; MFA hanteras i MFA-005 |
 | GitHub CI | PASS | [Körning 39856574892](https://github.com/heke99/plockivo/actions/runs/39856574892), kodcommit 0dd58b9a449115f87cf7199d949ded8f1d4da632: quality samt database PASS; alla fem migrationer och båda SQL-sviterna |
 
 ## Databas och migrering
@@ -61,3 +61,7 @@ API b245c5d och webb 9356732 driftsatta i separata Div3rsa-projekt, Node 24, arn
 Se [arbetsdokumentet](work/WORKER-004.md) för aktuell workerdrift; tidigare uppgifter om saknade worker-nycklar och avstängd cron avser DEPLOY-003:s testfönster. Sju API-tester, typkontroll och rent produktionsbygge PASS. Kod-CI [39925021159](https://github.com/heke99/plockivo/actions/runs/39925021159) PASS för ac511b3. Två samtidiga scans startade fyra Workflow-körningar för två jobb; databasreadback visade ett JSON-dokument och attempts=1 per jobb. Ny scan gav started=0.
 
 Automatisk cron 08:35 UTC PASS på b1cf517: två nya jobb behandlades utan manuell trigger, exakt ett ytterligare dokument. Efter städning: 0 handlare/order/korgar/jobb/dokument/testidentiteter. Tillfällig teståtkomst återkallad. Inga riktiga utskick.
+
+## MFA-005 — 2026-10-23
+
+TOTP-flöden och aktuell MFA-kontroll i SQL/API tillagda; se [arbetsdokumentet](work/MFA-005.md). Samtliga tre SQL-sviter PASS efter de två nya migrationerna. Sju API-tester och produktionsbygge PASS. MFA-förlust, säkerhetsnotiser och inbjudningar återstår.

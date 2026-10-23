@@ -180,7 +180,7 @@ Varje ID är hämtat ur masterplanen. **Delvis** betyder att kod finns för grun
 | SEC-2305 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
 | SEC-2306 | Planerat | Bygg enligt masterplanens kapitel och kvarstående beroenden |
 | SEC-2307 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
-| SEC-2308 | Planerat | Bygg enligt masterplanens kapitel och kvarstående beroenden |
+| SEC-2308 | Delvis implementerat | MFA-005: verifierat faktorbyte; kontaktbyte och säkerhetsnotis återstår |
 | SEC-2401 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
 | SEC-2402 | Planerat | Bygg enligt masterplanens kapitel och kvarstående beroenden |
 | SEC-2403 | Delvis implementerat | SQL/API och webb; se BOOTSTRAP-001 |
