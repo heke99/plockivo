@@ -1,5 +1,5 @@
 export const messages: Record<string,string> = {
-  MFA_REQUIRED:'Bekräfta din inloggning med en engångskod.', AUTH_REQUIRED:'Logga in för att fortsätta.', PERMISSION_DENIED:'Du saknar behörighet för den här handlingen.',
+  INVITATION_INVALID:'Inbjudan kan inte visas för detta konto. Kontrollera länken och din inloggning.', INVITATION_UNAVAILABLE:'Inbjudan har gått ut, återkallats eller är inte längre tillgänglig.', INVITATION_FINAL:'Inbjudan är redan accepterad. Medlemskapet hanteras separat.', MFA_REQUIRED:'Bekräfta din inloggning med en engångskod.', AUTH_REQUIRED:'Logga in för att fortsätta.', PERMISSION_DENIED:'Du saknar behörighet för den här handlingen.',
   NOT_FOUND:'Underlaget kunde inte hittas.', MEMBERSHIP_INACTIVE:'Ditt inköpsmandat är inte aktivt.',
   VALIDATION_ERROR:'Kontrollera uppgifterna och försök igen.', VERSION_CONFLICT:'Underlaget har ändrats. Hämta den senaste versionen.',
   IDEMPOTENCY_CONFLICT:'Begäran har redan använts med ett annat innehåll.', CREDIT_UNAVAILABLE:'Kreditutrymmet räcker inte eller kontot är spärrat.',
@@ -11,3 +11,4 @@ export const messages: Record<string,string> = {
 export function failure(code: string, correlationId: string, status = 400) {
  return Response.json({error:{code,message:messages[code]??messages.INTERNAL_ERROR,correlation_id:correlationId}}, {status,headers:{'Cache-Control':'no-store','X-Correlation-ID':correlationId}});
 }
+

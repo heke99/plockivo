@@ -1,7 +1,8 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';
 import { userDatabase } from '@/lib/db';
 import { failure } from '@/lib/errors';
 import { prepareInput,confirmInput,approvalInput,cartInput,cartSubmitInput,keyInput,idInput } from '@/lib/input';
+import {invitationInput,invitationTokenInput} from '@/lib/invitation-input';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
@@ -16,8 +17,10 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   if(identity.error||!identity.data.user)return failure('AUTH_REQUIRED',correlation,401);
   if(limited.error)throw limited.error;
   if(!limited.data)return failure('RATE_LIMITED',correlation,429);
-  let result;
-  if(req.method==='GET'&&path.join('/')==='carts/current'){
+  let result;let invitationToken:string|undefined;
+  if(req.method==='GET'&&path.join('/')==='invitations/options'){
+   result=await db.rpc('invitation_options',{p_membership:idInput.parse(new URL(req.url).searchParams.get('membership_id'))});
+  } else if(req.method==='GET'&&path.join('/')==='carts/current'){
    const q=new URL(req.url).searchParams;result=await db.rpc('get_current_cart',{p_tenant:idInput.parse(q.get('tenant_id')),p_account:idInput.parse(q.get('customer_account_id')),p_store:idInput.parse(q.get('store_id')),p_project:idInput.parse(q.get('project_id'))});
   } else if(req.method==='GET'&&path.join('/')==='context')result=await db.rpc('get_context');
   else if(req.method==='GET'&&path.join('/')==='catalog') {
@@ -30,7 +33,15 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
    const raw=await req.text();if(Buffer.byteLength(raw)>32768)return failure('VALIDATION_ERROR',correlation,413);
    const body=JSON.parse(raw);
    const key=keyInput.parse(req.headers.get('idempotency-key'));
-   if(path.join('/')==='carts/save')result=await db.rpc('save_cart',{p_body:cartInput.parse(body),p_key:key,p_correlation:correlation});
+   if(path.join('/')==='invitations'){
+    invitationToken=randomBytes(32).toString('hex');
+    result=await db.rpc('create_invitation',{p_body:invitationInput.parse(body),p_token:invitationToken,p_key:key,p_correlation:correlation});
+   } else if(path.join('/')==='invitations/preview')result=await db.rpc('preview_invitation',{p_token:invitationTokenInput.parse(body).token});
+   else if(path.join('/')==='invitations/accept')result=await db.rpc('accept_invitation',{p_token:invitationTokenInput.parse(body).token,p_correlation:correlation});
+   else if(path[0]==='invitations'&&path.length===3&&path[2]==='revoke'){
+    if(Object.keys(body).length) return failure('VALIDATION_ERROR',correlation,400);
+    result=await db.rpc('revoke_invitation',{p_id:idInput.parse(path[1]),p_correlation:correlation});
+   } else if(path.join('/')==='carts/save')result=await db.rpc('save_cart',{p_body:cartInput.parse(body),p_key:key,p_correlation:correlation});
    else if(path[0]==='carts'&&path.length===3&&path[2]==='submit')result=await db.rpc('submit_cart',{p_id:idInput.parse(path[1]),p_version:cartSubmitInput.parse(body).version,p_key:key,p_correlation:correlation});
    else if(path.join('/')==='purchase-intents')result=await db.rpc('prepare_purchase',{p_body:prepareInput.parse(body),p_key:key,p_correlation:correlation});
    else if(path[0]==='purchase-intents'&&path.length===3&&path[2]==='confirm')result=await db.rpc('confirm_purchase',{p_id:idInput.parse(path[1]),p_body:confirmInput.parse(body),p_key:key,p_correlation:correlation});
@@ -38,14 +49,15 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   }
   if(!result)return failure('NOT_FOUND',correlation,404);
   if(result.error)throw result.error;
-  return Response.json({data:result.data,contract_version:'0.2.0'}, {headers:{'Cache-Control':'no-store','X-Correlation-ID':correlation}});
+  return Response.json({data:invitationToken&&!result.data?.replayed?{...result.data,token:invitationToken}:result.data,contract_version:'0.2.0'}, {headers:{'Cache-Control':'no-store','X-Correlation-ID':correlation}});
  }catch(error) {
   if(error instanceof SyntaxError||(error&&typeof error==='object'&&'issues'in error))return failure('VALIDATION_ERROR',correlation,400);
   const msg=error&&typeof error==='object'&&'message'in error?String(error.message):'';
-  const known=['MFA_REQUIRED','PERMISSION_DENIED','NOT_FOUND','MEMBERSHIP_INACTIVE','VERSION_CONFLICT','IDEMPOTENCY_CONFLICT','CREDIT_UNAVAILABLE','APPROVAL_REQUIRED','PRICE_CHANGED','SALES_PAUSED','INTEGRATION_NOT_READY','BUDGET_EXCEEDED','VALIDATION_ERROR'];
+  const known=['INVITATION_INVALID','INVITATION_UNAVAILABLE','INVITATION_FINAL','RATE_LIMITED','MFA_REQUIRED','PERMISSION_DENIED','NOT_FOUND','MEMBERSHIP_INACTIVE','VERSION_CONFLICT','IDEMPOTENCY_CONFLICT','CREDIT_UNAVAILABLE','APPROVAL_REQUIRED','PRICE_CHANGED','SALES_PAUSED','INTEGRATION_NOT_READY','BUDGET_EXCEEDED','VALIDATION_ERROR'];
   const code=known.find(x=>msg===x);
-  return failure(code??'INTERNAL_ERROR',correlation,code==='NOT_FOUND'?404:code==='MFA_REQUIRED'||code==='PERMISSION_DENIED'||code==='MEMBERSHIP_INACTIVE'?403:code?409:500);
+  return failure(code??'INTERNAL_ERROR',correlation,code==='RATE_LIMITED'?429:code==='NOT_FOUND'?404:code==='MFA_REQUIRED'||code==='PERMISSION_DENIED'||code==='MEMBERSHIP_INACTIVE'?403:code?409:500);
  }
 }
 export const GET=handle;
 export const POST=handle;
+

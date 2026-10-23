@@ -1,0 +1,11 @@
+// Creates synthetic fixture SQL only. SQL is applied by the connected test runner.
+const {randomBytes}=require('node:crypto');const {readFileSync,writeFileSync}=require('node:fs');
+const password=randomBytes(24).toString('hex');
+let sql=readFileSync('tests/fixtures.sql','utf8').replaceAll('00000000-0000-4000-8000-','10000000-0000-4000-8000-');
+sql=sql.replaceAll('e2e-buyer@plockivo.invalid','e2e-invite-buyer@plockivo.invalid').replaceAll('e2e-approver@plockivo.invalid','e2e-invite-admin@plockivo.invalid').replaceAll('e2e-other@plockivo.invalid','e2e-invite-other@plockivo.invalid').replaceAll('e2e-nord','e2e-invite-nord').replaceAll('e2e-syd','e2e-invite-syd');
+sql+=`\nupdate auth.users set instance_id='00000000-0000-0000-0000-000000000000',aud='authenticated',role='authenticated',encrypted_password=extensions.crypt('${password}',extensions.gen_salt('bf')),email_confirmed_at=now(),confirmation_token='',recovery_token='',email_change_token_new='',email_change='',email_change_token_current='',raw_app_meta_data='{"provider":"email","providers":["email"]}',raw_user_meta_data='{}',created_at=now(),updated_at=now(),is_sso_user=false where id::text like '10000000-0000-4000-8000-%';
+insert into auth.identities(id,provider_id,user_id,identity_data,provider,created_at,updated_at) select gen_random_uuid(),id::text,id,jsonb_build_object('sub',id::text,'email',email,'email_verified',true),'email',now(),now() from auth.users where id::text like '10000000-0000-4000-8000-%';
+insert into public.memberships(id,user_id,tenant_id,customer_account_id,role,valid_to) values('10000000-0000-4000-8000-000000000030','10000000-0000-4000-8000-000000000007','10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002','customer_admin',now()+interval '30 days');
+insert into private.member_delegations values('10000000-0000-4000-8000-000000000030','buyer',50000,20000,now()+interval '30 days');
+`;
+writeFileSync('/tmp/plockivo-invites-fixture.sql',sql,{mode:0o600});writeFileSync('/tmp/plockivo-invites-access.json',JSON.stringify({password,admin:'e2e-invite-admin@plockivo.invalid',buyer:'e2e-invite-buyer@plockivo.invalid',other:'e2e-invite-other@plockivo.invalid'}),{mode:0o600});console.log('Synthetic fixture prepared; no emails sent.');
