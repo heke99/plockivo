@@ -60,3 +60,7 @@ Syntetiska merchants/order/cart/outbox/auth-identiteter städade med tests/clean
 Lägg endast i API-projektets känsliga Vercelmiljö: separat Supabase worker-nyckel SUPABASE_SECRET_KEY för cqznytuyutrqenbbyczc. Den anslutna Supabase-tjänsten exponerar enbart publishable keys; ingen administrativ nyckel har hämtats eller loggats. Generera sedan CRON_SECRET, deploya och verifiera en riktig Workflow-start, avbrott, recovery och idempotent dokument. Aktivera cron först efter detta. Nycklar ska inte skickas i chatt, läggas i Git eller i webbprojektet.
 
 Oberoende nästa produktarbete: verifierad inbjudan/personprovisionering och MFA, handlarkonfiguration och verklig ERP-kapacitetsprofil. Fulla pilotkrav enligt masterplan kapitel 38 kvarstår.
+
+## Uppföljning 2026-10-23
+
+Det historiska worker-blocket ovan har åtgärdats i [WORKER-004](WORKER-004.md). Nycklarna finns endast i API-servermiljön. Verkliga Workflow-körningar och parallell idempotens är nu verifierade. Arbetsdokumentet anger aktuell schemaläggning och begränsningar; verklig pilot är fortsatt RED.

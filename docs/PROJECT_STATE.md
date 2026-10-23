@@ -1,4 +1,4 @@
-# Checkpoint — 2026-10-22
+# Checkpoint — 2026-10-23
 
 ## Mål och faktisk leverans
 
@@ -6,7 +6,7 @@ Påbörja Plockivo enligt masterplan v2.2 och startkit 3.0.0 med DEL-3603:s samm
 
 ## Verifierat
 
-- Båda apparna typkontrolleras och bygger. 4 API-tester och 4 webb-/CSRF-tester passerar.
+- Båda apparna typkontrolleras och bygger. 7 API-tester och 4 webb-/CSRF-tester passerar.
 - Komplett browserresa på slutbygget passerar inklusive återupptagen order, local logout, 401 efter logout och mobilvy.
 - Transportvalidering och versionslåst genererad klient finns.
 - Riktiga authenticated-rolltester i Supabase: tenantisolering, scopes, spärr, attest utan självattest, låsta priser, versions-/hashkonflikt, replay, ett köp → en order, kredit/projektbudget, audit/outbox och idempotent testdokument.
@@ -23,7 +23,7 @@ Supabase cqznytuyutrqenbbyczc, utveckling med endast syntetiska testdata. Migrat
 
 1. [CARTS-002](work/CARTS-002.md) verifierat: ägd serverkorg, versionskontroll, en quote per revision, atomisk invalidation och ny korg efter order. SQL-rolltester, samtidiga ändringar, slutlig browseromkörning och GitHub CI passerar. API-kodcommit 0dd58b9; se verifieringsrapporten.
 2. API och webb 0.2.0 är publicerade i heke99/plockivo respektive heke99/plockivo-web. Webbens källkod motsvarar kodcommit abbb0ed381d2473ec0125e0dac0dc2d5ed0df1f1; webbens GitHub CI 39857451898 PASS.
-3. [DEPLOY-003](work/DEPLOY-003.md) PASS för det begränsade driftsatta testköpet. Worker BLOCKED: SUPABASE_SECRET_KEY och CRON_SECRET saknas i API-projektet; cron är avstängt. Konfigurera dessa endast server-side och verifiera Workflow-recovery innan cron aktiveras.
+3. [DEPLOY-003](work/DEPLOY-003.md) PASS för det begränsade driftsatta testköpet. WORKER-004: servernycklar konfigurerade; verkliga Workflow-starter, kvarvarande jobb efter ny deployment och parallell idempotens verifierade. Cron var femte minut verifierad 08:35 UTC. Två testorder gav exakt två dokument; alla testdata städade. Se [WORKER-004](work/WORKER-004.md).
 4. Fortsätt med inbjudan/MFA, handlarkonfiguration och verklig ERP-kapacitetsprofil. Därefter utlämningsanspråk, delutlämning/annullering, ekonomisk radallokering och returer.
 
 ## Blockerare före verkliga köp

@@ -19,7 +19,7 @@ Miljö: lokala produktionsbyggen av API och webb, Supabase utvecklingsprojekt cq
 | HTTP med verklig Auth/BFF/API/DB | PASS | Personlogin → kontext → barcode → quote → confirm → replay med ny nyckel → orderreadback; Origin 403, auth 401, logout 200 |
 | HttpOnly och cookieomfång | PASS via HTTP | Set-Cookie kontrollerad för HttpOnly och avsaknad av Domain. Webbläsarbeteende dokumenteras separat. |
 | Dokumentworker i databas | PASS | En JSON-köpbekräftelse, inga dubbletter; notifiering stannar manual_review |
-| Vercel Workflow | Delvis | SDK bygger 1 workflow; service key/körmiljö saknas för verklig återstarts- och deployverifiering |
+| Vercel Workflow | PASS för avgränsat test | WORKER-004: verklig start i arn1, bestående backlog genom deployment, parallella starter utan dubbla dokument. Processavbrott mitt i steg och externa effekter ej verifierade. |
 | Säkerhetsadvisors | 1 konfigurationsvarning kvar | Leaked Password Protection är avstängd i Supabase Auth. [Åtgärd](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). Därutöver avsiktliga INFO om deny-all-tabeller utan appgrants. |
 | Browser desktop/mobil | PASS för första fulla testresan | Chromium/Playwright: inloggning, manuell streckkod, underlag, order, reload, historik, återupptagning, logout, 401 efter logout, HttpOnly host-only cookies och 390px utan horisontell overflow. Inga pageerrors. Slutomkörningen passerade efter explicit local logout och optimerad sessionsproxy. |
 | Fysisk kamera/PWA-installation | NOT RUN | Verkliga pilottelefoner och etiketter återstår. |
@@ -34,7 +34,7 @@ De fem lokala migrationsfilernas namn är synkade mot serverns migrationshistori
 
 ## Kvarstående produktionsrisker
 
-Testpris och lokal kreditreservation bevisar inte samordnad kredit över en handlares andra säljkanaler. API-kvoten är ett transportskydd; direkta skyddade RPC-vägar behöver egen kostnads-/kapacitetsbedömning före pilot. Operativa larm, verklig jobbrecovery, PDF/Storage, återställning och komplett kundlivscykel är inte verifierade. Masterplanens kapitel 38 styr verklig start.
+Testpris och lokal kreditreservation bevisar inte samordnad kredit över en handlares andra säljkanaler. API-kvoten är ett transportskydd; direkta skyddade RPC-vägar behöver egen kostnads-/kapacitetsbedömning före pilot. Operativa larm, processavbrott mitt i jobb, PDF/Storage, återställning och komplett kundlivscykel är inte verifierade. Masterplanens kapitel 38 styr verklig start.
 
 ## Observerade externa beroenden
 
@@ -55,3 +55,9 @@ Webbens kodcommit abbb0ed381d2473ec0125e0dac0dc2d5ed0df1f1 i heke99/plockivo-web
 ## Vercel-testdrift
 
 API b245c5d och webb 9356732 driftsatta i separata Div3rsa-projekt, Node 24, arn1, med skydd kvar. HTTP och browser hela vägen till DB PASS, inklusive sparad korg, testorder, replay, Secure HttpOnly host-only cookies, logout/401 och mobil. Tre avsiktliga testorder gav 75000 öre exponering/projektåtagande och sex köade outboxjobb. Worker avstängd; inga externa leveranser påstås. Testdata städade med readback 0. Kvalitetskontroller och båda reponas CI PASS. Se API-repots docs/work/DEPLOY-003.md för komplett scenariomatris och begränsningar.
+
+## WORKER-004 — 2026-10-23
+
+Se [arbetsdokumentet](work/WORKER-004.md) för aktuell workerdrift; tidigare uppgifter om saknade worker-nycklar och avstängd cron avser DEPLOY-003:s testfönster. Sju API-tester, typkontroll och rent produktionsbygge PASS. Kod-CI [39925021159](https://github.com/heke99/plockivo/actions/runs/39925021159) PASS för ac511b3. Två samtidiga scans startade fyra Workflow-körningar för två jobb; databasreadback visade ett JSON-dokument och attempts=1 per jobb. Ny scan gav started=0.
+
+Automatisk cron 08:35 UTC PASS på b1cf517: två nya jobb behandlades utan manuell trigger, exakt ett ytterligare dokument. Efter städning: 0 handlare/order/korgar/jobb/dokument/testidentiteter. Tillfällig teståtkomst återkallad. Inga riktiga utskick.
