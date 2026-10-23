@@ -65,3 +65,5 @@ Automatisk cron 08:35 UTC PASS på b1cf517: två nya jobb behandlades utan manue
 ## MFA-005 — 2026-10-23
 
 TOTP-flöden och aktuell MFA-kontroll i SQL/API tillagda; se [arbetsdokumentet](work/MFA-005.md). Samtliga tre SQL-sviter PASS efter de två nya migrationerna. Sju API-tester och produktionsbygge PASS. MFA-förlust, säkerhetsnotiser och inbjudningar återstår.
+
+MFA-005: driftsatt aktivering, ny login med kodkrav, API 403→200, mobil 390px, Secure HttpOnly host-only cookies och utloggning/401 PASS på API 0d609fe och webb 9e1a63f. CI 39942123792/39955297867 PASS. Åtta städreadbacks inklusive Auth-faktorer och sessioner =0. Full pilot fortsatt RED.
