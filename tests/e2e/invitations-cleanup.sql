@@ -1,0 +1,31 @@
+-- Only the isolated persistent browser fixture; DB rollback tests do not need this.
+begin;
+do $$begin if exists(select 1 from public.merchants where id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008') and (mode<>'test' or slug not in ('e2e-invite-nord','e2e-invite-syd'))) then raise exception 'Not the synthetic fixture';end if;end$$;
+delete from auth.sessions where user_id in (select id from auth.users where id::text like '10000000-0000-4000-8000-%' and email like 'e2e-invite-%@plockivo.invalid');
+update public.memberships set invitation_id=null where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.invitations where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.member_delegations where membership_id in (select id from public.memberships where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008'));
+delete from public.documents where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.outbox where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.credit_reservations where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.commands where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.audit_events where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.approvals where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.cart_quotes where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.cart_lines where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.carts where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.order_lines where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.orders where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.purchase_intents where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.test_prices where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.product_barcodes where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.products where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.memberships where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.projects where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.stores where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.customer_accounts where tenant_id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from public.merchants where id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000008');
+delete from private.api_quotas where user_id in ('10000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000007','10000000-0000-4000-8000-000000000011');
+delete from auth.users where id in ('10000000-0000-4000-8000-000000000005','10000000-0000-4000-8000-000000000007','10000000-0000-4000-8000-000000000011') and email like 'e2e-%@plockivo.invalid';
+commit;
+

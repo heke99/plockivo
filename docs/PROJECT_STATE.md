@@ -31,6 +31,6 @@ Supabase cqznytuyutrqenbbyczc, utveckling med endast syntetiska testdata. Migrat
 ERP och kreditauktoritet ej valda; Creditsafe och avsändaravtal saknas; juridiskt plattformsbolag/pilotprofil ej verifierade; inga riktiga utskick, fakturor, PDF:er, lager- eller utlämningseffekter. MFA-förlust/återställning och säkerhetsnotiser, backupövning, per-handlardomän/PWA-identitet, fysisk telefonkamera och full pilot-E2E återstår. Databasoperationen vägrar production-mode. Bevara denna spärr tills berörda krav är verifierade.
 
 
-## INVITES-006 — aktivt arbete
+## INVITES-006 — publicerad testleverans
 
-Säkra personinbjudningar och UI/framsida implementerade. SQL-rollmatris och lokala kvalitetskontroller PASS. Slutlig browser, publicering och städning följs i [INVITES-006](work/INVITES-006.md). Kontoaktivering och riktiga utskick återstår.
+Säkra personinbjudningar och UI/framsida implementerade. SQL-rollmatris och lokala kvalitetskontroller PASS. Browser, mobil/framsida, säker replay och städning PASS; API och webb publicerade och Vercel READY. Actions står i kö vid slutkontroll. Evidens finns i [INVITES-006](work/INVITES-006.md). Kontoaktivering och riktiga utskick återstår.
