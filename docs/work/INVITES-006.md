@@ -42,3 +42,6 @@ API c45facd1607299495abf55dd62c5092269c2bade, Vercel dpl_n2hqCb3HFYad9XfLU7RKoCo
 GitHub Actions API 40029071861 och webb 40029076457 står i kö vid slutkontroll. Ren migrationsreplay i CI är därför ännu inte verifierad för denna release. Befintlig lokal verify samt alla fyra SQL-sviter PASS. Detta är en begränsad testleverans, full pilot fortsatt RED.
 
 Guardad invitations-cleanup.sql körd. Readback: fem testkategorier ovan =0. Temporära testlösenord och länkar tas bort ur /tmp. Inga riktiga mejl skickade. Nästa exakta produktsteg: komplett kontoaktivering/avsändaranslutning och handlarkonfiguration med profil och verifierade domäner. Skydd mot läckta lösenord och MFA-förlust kvarstår före pilot.
+
+
+Slutkontroll 2026-10-24: GitHub Actions API 40029071861 och webb 40029076457 completed/success för ovanstående kodcommits. Ren migrationsreplay och CI-kvalitetskontroller PASS. Vercel-webbdeployment bekräftad READY med rätt commit och alias plockivo-web.vercel.app. Ny SQL-readback bekräftar återigen noll syntetiska users/merchants/invitations/sessions/factors i fixture-namespace. Ingen ytterligare full driftsatt browserresa har körts.
