@@ -30,7 +30,8 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   else if(req.method==='GET'&&path.join('/')==='catalog') {
    const url=new URL(req.url); const tenant=idInput.parse(url.searchParams.get('tenant_id'));
    result=await db.rpc('lookup_products',{p_tenant:tenant,p_query:(url.searchParams.get('q')??'').slice(0,100)});
-  } else if(req.method==='GET'&&path[0]==='purchase-intents'&&path.length===2)result=await db.rpc('get_purchase_intent',{p_id:idInput.parse(path[1])});
+  } else if(req.method==='GET'&&path[0]==='purchase-intents'&&path.length===3&&path[2]==='confirmation')result=await db.rpc('get_order_confirmation',{p_intent:idInput.parse(path[1])});
+  else if(req.method==='GET'&&path[0]==='purchase-intents'&&path.length===2)result=await db.rpc('get_purchase_intent',{p_id:idInput.parse(path[1])});
   else if(req.method==='GET'&&path.join('/')==='purchase-intents')result=await db.rpc('list_purchase_intents');
   else if(req.method==='POST') {
    if(!req.headers.get('content-type')?.startsWith('application/json'))return failure('VALIDATION_ERROR',correlation,415);
