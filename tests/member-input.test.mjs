@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {memberRevokeInput} from '../src/lib/member-input.ts';
+test('revoke transport allows expected revision only, not actor/role/status injection',()=>{const b={tenant_id:'00000000-0000-4000-8000-000000000001',version:0};assert(memberRevokeInput.safeParse(b).success);for(const p of [{version:-1},{version:0.5},{role:'merchant_admin'},{actor_id:b.tenant_id},{status:'active'}])assert(!memberRevokeInput.safeParse({...b,...p}).success)});

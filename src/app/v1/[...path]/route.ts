@@ -2,6 +2,7 @@ import { randomUUID, randomBytes } from 'node:crypto';
 import { userDatabase } from '@/lib/db';
 import { failure } from '@/lib/errors';
 import { prepareInput,confirmInput,approvalInput,cartInput,cartSubmitInput,keyInput,idInput } from '@/lib/input';
+import {memberRevokeInput} from '@/lib/member-input';
 import {domainRequestInput,domainRemoveInput} from '@/lib/domain-input';
 import {profileInput} from '@/lib/profile-input';
 import {invitationInput,invitationTokenInput} from '@/lib/invitation-input';
@@ -10,6 +11,7 @@ export const dynamic='force-dynamic';
 async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
  const correlation=randomUUID();
  const {path}=await ctx.params;
+ if(path[0]==='merchant-members'&&process.env.MERCHANT_MEMBER_ADMIN_ENABLED!=='true')return Response.json({error:{code:'INTEGRATION_NOT_READY',message:'Mandathanteringen är inte aktiverad ännu.'}},{status:503,headers:{'Cache-Control':'no-store'}});
  if(req.method==='GET'&&path.join('/')==='health')return Response.json({service:'plockivo-api',version:'0.2.0',contract:'0.2.0'},{headers:{'Cache-Control':'no-store'}});
  const token=req.headers.get('authorization')?.match(/^Bearer ([^\s]+)$/)?.[1];
  if(!token)return failure('AUTH_REQUIRED',correlation,401);
@@ -20,7 +22,9 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   if(limited.error)throw limited.error;
   if(!limited.data)return failure('RATE_LIMITED',correlation,429);
   let result;let invitationToken:string|undefined;
-  if(req.method==='GET'&&path.join('/')==='merchant-domains'){result=await db.rpc('list_merchant_domains',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
+  if(req.method==='GET'&&path.join('/')==='merchant-jobs'){result=await db.rpc('list_merchant_jobs',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
+  } else if(req.method==='GET'&&path.join('/')==='merchant-members'){result=await db.rpc('list_merchant_members',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
+  } else if(req.method==='GET'&&path.join('/')==='merchant-domains'){result=await db.rpc('list_merchant_domains',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path.join('/')==='merchant-profile'){result=await db.rpc('get_merchant_profile',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path.join('/')==='invitations/options'){
    result=await db.rpc('invitation_options',{p_membership:idInput.parse(new URL(req.url).searchParams.get('membership_id'))});
@@ -38,7 +42,8 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
    const raw=await req.text();if(Buffer.byteLength(raw)>32768)return failure('VALIDATION_ERROR',correlation,413);
    const body=JSON.parse(raw);
    const key=keyInput.parse(req.headers.get('idempotency-key'));
-   if(path.join('/')==='merchant-domains'){const d=domainRequestInput.parse(body);result=await db.rpc('request_merchant_domain',{p_tenant:d.tenant_id,p_hostname:d.hostname,p_correlation:correlation});
+   if(path[0]==='merchant-members'&&path.length===3&&path[2]==='revoke'){const d=memberRevokeInput.parse(body);result=await db.rpc('revoke_merchant_member',{p_tenant:d.tenant_id,p_member:idInput.parse(path[1]),p_version:d.version,p_key:key,p_correlation:correlation});
+   } else if(path.join('/')==='merchant-domains'){const d=domainRequestInput.parse(body);result=await db.rpc('request_merchant_domain',{p_tenant:d.tenant_id,p_hostname:d.hostname,p_correlation:correlation});
    } else if(path[0]==='merchant-domains'&&path.length===3&&path[2]==='remove'){const d=domainRemoveInput.parse(body);result=await db.rpc('remove_merchant_domain',{p_tenant:d.tenant_id,p_id:idInput.parse(path[1]),p_version:d.version,p_correlation:correlation});
    } else if(path.join('/')==='merchant-profile'){result=await db.rpc('save_merchant_profile',{p_body:profileInput.parse(body),p_key:key,p_correlation:correlation});
    } else if(path.join('/')==='invitations'){

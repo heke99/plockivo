@@ -14,9 +14,9 @@ Webben visar tydlig väntan, fel med retry och sparad snapshot med säljare, kö
 
 Migration 20261025224913_order_confirmation_read tillämpad i syntetiska Supabase cqznytuyutrqenbbyczc och filnamn synkat med serverhistorik. tests/confirmations.sql terminal PASS med riktiga authenticated/service_role/anon-kontexter: eget testköp -> pending -> worker -> ready, exakt snapshot och 25000 öre, upprepad läsning utan effekt, en synlig handling, korshandlare nekas, återkallat mandat nekas, direkt document-RLS nekas och anonym execute nekas. Hela provet rollback; inga persistenta fixtures skapade. Testet ingår i run-database.mjs.
 
-API typkontroll och 12 befintliga enhetstester PASS. OpenAPI är uppdaterat och båda genererade klientartefakterna samt kontraktslåsets SHA är synkade.
+API npm run verify terminal PASS: standardkontroll, typkontroll, 12 befintliga enhetstester och produktionsbygge. OpenAPI är uppdaterat och båda genererade klientartefakterna samt kontraktslåsets SHA är synkade.
 
-Fokuserad Chromium-körning tests/e2e/order-confirmation.cjs PASS på sammanförda webbbygget: pending visar inget fabricerat dokument, ready visar snapshot och testmärkning, scriptliknande text visas som text, 404 rensar tidigare dokument, 390/768/1440px utan overflow och inga pageerrors. Mobilskärmbild visuellt granskad. Detta UI-prov använder intercepted API och är inte Auth-/RLS-bevis; SQL-provet ovan ger separat verkligt databasbevis. Ingen driftsatt webbläsar-PASS påstås av denna delagent.
+Fokuserad Chromium-körning tests/e2e/order-confirmation.cjs PASS och slutomkörning på slutbygget PASS (port 3413): pending visar inget fabricerat dokument, ready visar snapshot och testmärkning, scriptliknande text visas som text, 404 rensar tidigare dokument, 390/768/1440px utan overflow och inga pageerrors. Mobilskärmbild visuellt granskad. Detta UI-prov använder intercepted API och är inte Auth-/RLS-bevis; SQL-provet ovan ger separat verkligt databasbevis. Ingen driftsatt webbläsar-PASS påstås av denna delagent.
 
 ## Kvarstående
 
