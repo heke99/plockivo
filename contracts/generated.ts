@@ -335,6 +335,7 @@ export interface components {
             mode: string;
             account: string | null;
             permissions: string[];
+            branding: components["schemas"]["BuyerBranding"];
         };
         Store: {
             /** Format: uuid */
@@ -608,6 +609,11 @@ export interface components {
             /** @enum {string} */
             status: "pending" | "verified" | "removed";
             version: number;
+        };
+        BuyerBranding: {
+            display_name: string;
+            primary_color: string;
+            logo_data_url: string | null;
         };
     };
     responses: never;

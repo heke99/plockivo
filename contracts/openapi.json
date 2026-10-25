@@ -2676,6 +2676,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "branding": {
+            "$ref": "#/components/schemas/BuyerBranding"
           }
         },
         "required": [
@@ -2689,7 +2692,8 @@
           "merchant_slug",
           "mode",
           "account",
-          "permissions"
+          "permissions",
+          "branding"
         ],
         "additionalProperties": false
       },
@@ -3719,6 +3723,30 @@
           "version": {
             "type": "integer",
             "minimum": 1
+          }
+        }
+      },
+      "BuyerBranding": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "display_name",
+          "primary_color",
+          "logo_data_url"
+        ],
+        "properties": {
+          "display_name": {
+            "type": "string"
+          },
+          "primary_color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "logo_data_url": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }
