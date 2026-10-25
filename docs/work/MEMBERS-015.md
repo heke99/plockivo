@@ -11,3 +11,7 @@ Webb visar mandat, explicit bekräftelse och tydligt otillgänglighetsfel om fun
 Transporttest täcker giltig revision och nekar actor/roll/status-injektion. tests/members.sql är förberett för riktig authenticated-roll, tenantgräns, admin/self-skydd, revisionskonflikt, replay, en audit och omedelbar åtkomstförlust. SQL-testet är INTE kört: ingen lokal Docker finns och hosted migration blockerades av automatisk godkännandegranskning. Inga bestående testdata skapades.
 
 Automatisk granskning avvisade apply_migration med skälet: "This applies a persistent production database schema and authorization change enabling membership revocation, but the user authorized continuing the plan generally rather than this exact access-control migration; it should be reviewed and explicitly approved after validation." Ingen workaround eller indirekt exekvering användes. Exakt migration behöver godkännas innan liveaktivering. Implementation är reviewbar men inte live SQL-verifierad.
+
+## Godkänd aktivering 2026-10-26
+
+Användaren godkände exakt migration. Tillämpad som serverversion 20261025231731_member_administration.sql. Riktig authenticated-rollmatris PASS: scoped list, skydd för eget/adminmandat, versionskonflikt, revoke/replay, exakt audit och omedelbar åtkomstförlust. Rollbacktest lämnar ingen fixture. MERCHANT_MEMBER_ADMIN_ENABLED=true konfigurerad i Vercel API production; ny deployment krävs för effekt. Tidigare blockerartext ovan är historik.

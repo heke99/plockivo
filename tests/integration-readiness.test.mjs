@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {integrationReadiness} from '../src/lib/integration-readiness.ts';
+test('capability inventory is informational and cannot enable sales',()=>{const r=integrationReadiness();assert.equal(r.production_sales_enabled,false);assert.equal(r.scope,'release_capabilities');assert.equal(r.capabilities.find(c=>c.id==='invoice_creation').status,'not_connected');assert.equal(r.capabilities.find(c=>c.id==='catalog_price').status,'synthetic_only');assert.equal(new Set(r.capabilities.map(c=>c.id)).size,r.capabilities.length)});
+test('mutation of a report cannot change later capability reports',()=>{const r=integrationReadiness();r.capabilities.length=0;assert.equal(integrationReadiness().capabilities.length,6);assert(!/SECRET|API_KEY/.test(JSON.stringify(integrationReadiness())))});
