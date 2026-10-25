@@ -244,6 +244,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getMerchantProfile"];
+        put?: never;
+        post: operations["saveMerchantProfile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant-domains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMerchantDomains"];
+        put?: never;
+        post: operations["requestMerchantDomain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant-domains/{id}/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["removeMerchantDomain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -541,6 +589,25 @@ export interface components {
             stores: components["schemas"]["InvitationOptionItem"][];
             projects: components["schemas"]["InvitationOptionItem"][];
             invitations: components["schemas"]["Invitation"][];
+        };
+        MerchantProfile: {
+            /** Format: uuid */
+            tenant_id: string;
+            name: string;
+            version: number;
+            profile: {
+                display_name: string;
+                primary_color: string;
+                logo_data_url: string | null;
+            };
+        };
+        MerchantDomain: {
+            /** Format: uuid */
+            id: string;
+            hostname: string;
+            /** @enum {string} */
+            status: "pending" | "verified" | "removed";
+            version: number;
         };
     };
     responses: never;
@@ -2221,6 +2288,144 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Error"];
                 };
+            };
+        };
+    };
+    getMerchantProfile: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description MFA-authorized merchant profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["MerchantProfile"];
+                    };
+                };
+            };
+        };
+    };
+    saveMerchantProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    tenant_id: string;
+                    version: number;
+                    profile: {
+                        display_name: string;
+                        primary_color: string;
+                        logo_data_url: string | null;
+                    };
+                };
+            };
+        };
+        responses: {
+            /** @description Saved or replayed profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listMerchantDomains: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scoped merchant domain result; requests remain pending until platform verification. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    requestMerchantDomain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    tenant_id: string;
+                    hostname: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Scoped merchant domain result; requests remain pending until platform verification. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    removeMerchantDomain: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    tenant_id: string;
+                    version: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Scoped merchant domain result; requests remain pending until platform verification. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

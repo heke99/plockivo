@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {profileInput} from '../src/lib/profile-input.ts';
+const valid={tenant_id:'00000000-0000-4000-8000-000000000001',version:0,profile:{display_name:'Butik',primary_color:'#244e3c',logo_data_url:null}};
+test('profile rejects injected fields, unsafe logos, CSS and stale invalid versions',()=>{assert(profileInput.safeParse(valid).success);for(const x of [{...valid,actor_id:valid.tenant_id},{...valid,version:-1},{...valid,profile:{...valid.profile,primary_color:'red;display:none'}},{...valid,profile:{...valid.profile,logo_data_url:'data:image/svg+xml;base64,AAAA'}}])assert.equal(profileInput.safeParse(x).success,false)});

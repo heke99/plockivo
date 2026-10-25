@@ -2269,6 +2269,234 @@
           }
         ]
       }
+    },
+    "/v1/merchant-profile": {
+      "get": {
+        "operationId": "getMerchantProfile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MFA-authorized merchant profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MerchantProfile"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveMerchantProfile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "tenant_id",
+                  "version",
+                  "profile"
+                ],
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer"
+                  },
+                  "profile": {
+                    "type": "object",
+                    "required": [
+                      "display_name",
+                      "primary_color",
+                      "logo_data_url"
+                    ],
+                    "properties": {
+                      "display_name": {
+                        "type": "string",
+                        "maxLength": 80
+                      },
+                      "primary_color": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$"
+                      },
+                      "logo_data_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ],
+                        "maxLength": 22000
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved or replayed profile"
+          },
+          "409": {
+            "description": "Version or idempotency conflict"
+          }
+        }
+      }
+    },
+    "/v1/merchant-domains": {
+      "get": {
+        "operationId": "listMerchantDomains",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped merchant domain result; requests remain pending until platform verification."
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "requestMerchantDomain",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped merchant domain result; requests remain pending until platform verification."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "tenant_id",
+                  "hostname"
+                ],
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "hostname": {
+                    "type": "string",
+                    "maxLength": 253
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/merchant-domains/{id}/remove": {
+      "post": {
+        "operationId": "removeMerchantDomain",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scoped merchant domain result; requests remain pending until platform verification."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "tenant_id",
+                  "version"
+                ],
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3417,6 +3645,82 @@
           "invitations"
         ],
         "additionalProperties": false
+      },
+      "MerchantProfile": {
+        "type": "object",
+        "required": [
+          "tenant_id",
+          "name",
+          "version",
+          "profile"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "profile": {
+            "type": "object",
+            "required": [
+              "display_name",
+              "primary_color",
+              "logo_data_url"
+            ],
+            "properties": {
+              "display_name": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "primary_color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "logo_data_url": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 22000
+              }
+            }
+          }
+        }
+      },
+      "MerchantDomain": {
+        "type": "object",
+        "required": [
+          "id",
+          "hostname",
+          "status",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hostname": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "verified",
+              "removed"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
       }
     }
   }
