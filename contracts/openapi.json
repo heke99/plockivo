@@ -4226,6 +4226,93 @@
           }
         }
       }
+    },
+    "/v1/standalone-catalog/page": {
+      "get": {
+        "operationId": "pageStandaloneCatalog",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Tenant/MFA-authorized search across the preparation register, stable (sku,id) cursor. Search matches literal substrings, not SQL wildcard expressions. Pages are current reads, not an immutable export snapshot.",
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": ""
+            }
+          },
+          {
+            "name": "after_sku",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          {
+            "name": "after_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered total plus current page. Both cursor fields are required together when paging.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StandaloneCatalogPage"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query/cursor pair"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "MFA or merchant permission denied"
+          },
+          "503": {
+            "description": "Catalog unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6531,6 +6618,57 @@
           "remaining": {
             "type": "integer",
             "minimum": 0
+          }
+        }
+      },
+      "StandaloneCatalogPage": {
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "next_cursor",
+          "authority",
+          "checkout_enabled"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StandaloneCatalogItem"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_cursor": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "sku",
+              "id"
+            ],
+            "properties": {
+              "sku": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          "authority": {
+            "type": "string",
+            "enum": [
+              "standalone-preparation"
+            ]
+          },
+          "checkout_enabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
           }
         }
       }

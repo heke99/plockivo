@@ -1,3 +1,4 @@
+import {catalogPageInput} from '@/lib/catalog-page-input';
 import {runCatalogBatch} from '@/lib/catalog-batch';
 import {customerCreateInput} from '@/lib/customer-input';
 import {standaloneCatalogInput} from '@/lib/standalone-catalog-input';
@@ -35,6 +36,7 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   if(!limited.data)return failure('RATE_LIMITED',correlation,429);
   let result;let invitationToken:string|undefined;
   if(req.method==='GET'&&path.join('/')==='merchant-customers'){result=await db.rpc('list_merchant_customers',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
+  } else if(req.method==='GET'&&path.join('/')==='standalone-catalog/page'){const q=new URL(req.url).searchParams;const input=catalogPageInput.parse({tenant_id:q.get('tenant_id'),query:q.get('q')??'',after_sku:q.get('after_sku'),after_id:q.get('after_id'),limit:q.get('limit')??'50'});result=await db.rpc('page_standalone_catalog',{p_tenant:input.tenant_id,p_query:input.query,p_after_sku:input.after_sku,p_after_id:input.after_id,p_limit:input.limit});
   } else if(req.method==='GET'&&path.join('/')==='standalone-catalog'){result=await db.rpc('list_standalone_catalog',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path[0]==='fulfillment'&&path.length===3&&path[2]==='billing-underlay'){result=await db.rpc('get_test_billing_underlay',{p_order:idInput.parse(path[1])});
   } else if(req.method==='GET'&&path[0]==='fulfillment'&&path.length===2){result=await db.rpc('get_test_fulfillment',{p_order:idInput.parse(path[1])});

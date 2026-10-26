@@ -15,3 +15,6 @@ POST /v1/standalone-catalog/import, JSON, Authorization: Bearer <personlig aktue
 För mer än tio artiklar: skapa separata stabila batch-ID:n, lagra varje begäran och dess radstatus i integrationssystemet, invänta bekräftat utfall och fortsätt först därefter. Vid429 vänta och återanvänd originalnyckeln. Vid401/403 återställ behörig personlig session/MFA; kringgå inte spärren.
 
 Singeluppdateringar: POST /v1/standalone-catalog med aktuellt id/version. Ingen automatisk matchning efter SKU. Detta register är preparation-authority, inte produktionscheckout, kreditauktoritet eller lagerbokföring.
+
+## Sökning och sidindelning
+GET /v1/standalone-catalog/page?tenant_id=<uuid>&q=<literalquery>&limit=50. Returnerar items,total,next_cursor:{sku,id}|null. För nästa sida skicka både after_sku och after_id från next_cursor tillsammans med oförändrad q. Limit1–100. Bokstavlig delsträng i SKU, namn och barcode (case-insensitive). Både cursorfält eller inget. Samma befintliga tenant/MFA-readbehörighet. Gamla listendpointen finns kvar för kompatibilitet men nya listkonsumenter ska använda paginerat API. Ingen immutable snapshot mellan anrop.

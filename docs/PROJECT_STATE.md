@@ -61,3 +61,6 @@ D012 och masterplanstillägg godkända: inget generellt ERP-krav. Standalone art
 
 ## 2026-10-26 — Import via filer/API och livedatabassimulering
 Ny create-only API-batch1–10 artiklar, full inputvalidering, originalnyckel→deterministisk radnyckel, sekventiell save_standalone_catalog och stoppa vid första fel/okänt. HTTP207 redovisar partial result, ingen batchatomicitet. Befintlig person/MFA/tenantkontroll, perrad API-kvot. Kontraktet genererat och synkat till webb. CATALOG-IMPORT-SIM-031 körd hosted:3 artiklar, replay/konflikt/unikhet/tenant/MFA/audit PASS och rollback-cleanup8 nollor. Se IMPORT-E2E-034 för avgränsningar, inte full P0-verifiering.
+
+## 2026-10-26 — Katalog035–038
+MFA/tenant-skyddad read-pagination/sökning över hela standalone-registret installerad som20261026180352, gammal listRPC kvar. OpenAPI/genererade typer synkade. Hosted207rader/5sidor/unikhet/ordning/literalquery/tenant/MFA/limits/read-only PASS och8cleanupnollor. API33 tester/build PASS. Se CATALOG-E2E-038 för avgränsningar; full Auth/browser-P0 ej verifierad.
