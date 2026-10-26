@@ -16,7 +16,7 @@ Produkt: white label B2B-självskanning för bemannade butiker. Källa: [masterp
 
 GitHub: heke99/plockivo, ursprungligen tomt **publikt** repo. Lokal rot är API-projektet. Webbens separata checkout heter plockivo-web; GitHub-repot heke99/plockivo-web skapades av produktägaren och webb 0.2.0 är publicerad där. Ingen monorepo eller relativ import mellan projekt används.
 
-Supabase: plockivo, projekt cqznytuyutrqenbbyczc, PostgreSQL 17, region eu-north-1. Tabellen var tom före uppdraget. Miljön behandlas som enbart syntetisk utveckling; inga verkliga handlare är provisionerade. Migrationer har tillämpats där och rolltestats. Separata Vercelprojekt plockivo-api och plockivo-web är driftsatta i Div3rsa, arn1, Node 24, med Deployment Protection. Verksamhetsmiljön är syntetisk test; testworker är verifierad i WORKER-004 och cron är aktiv. Verklig pilot är inte aktiverad. Railway används inte.
+Supabase: plockivo, projekt cqznytuyutrqenbbyczc, PostgreSQL 17, region eu-north-1. Tabellen var tom före uppdraget. Miljön behandlas som enbart syntetisk utveckling; inga verkliga handlare är provisionerade. Migrationer har tillämpats där och rolltestats. Separata Vercelprojekt plockivo-api och plockivo-web är driftsatta i Div3rsa, arn1, Node 24, med Deployment Protection. Databasen har produktionsfunktioner och testas med isolerade rollback-fixtures; testworker är verifierad i WORKER-004 och cron är aktiv. Verklig Auth/Strato-SMTP och fysisk pilotkedja är fortfarande inte slutverifierade. Railway används inte.
 
 ## Ägarskap
 
@@ -24,7 +24,7 @@ SQL i `supabase/migrations` äger permissions och atomiska köpregler. TypeScrip
 
 Handlare är tenant. Kundkonto är handlarbunden köparrelation. En medlemsrad har explicit konto-, butik- och projektomfattning samt giltighetsintervall. Beloppsgräns och attesttröskel anges inkl. moms i SEK-ören. Projektbudgeten i första testflödet är en total projektbudget, inte en periodbudget.
 
-Testprisadaptern är den enda implementationen; verklig ERP-auktoritet är **inte** ansluten. Den kan bara acceptera testorder hos testhandlare. Ekonomiska värden överförs som strängar. Exponering, projektåtagande, orderrader, audit och outbox ändras i samma transaktion. Låsordning anges i confirm-funktionen.
+Både separat synthetic-test och uttryckligen konfigurerad fristående produktion finns. Fristående drift använder Plockivos kundpriser/lager, handlarens manuella kreditbeslut, helutlämning och manuell ekonomiexport. Underlagsbunden betalningsavstämning/rättelse återför/återställer kreditexponering, utan att ändra projektets förbrukade budget. Verklig ERP-auktoritet är **inte** ansluten. Ekonomiska värden överförs som strängar. Exponering, projektåtagande, orderrader, audit och outbox ändras i samma transaktion. Låsordning anges i confirm-funktionen.
 
 ## Kommandon
 
@@ -37,3 +37,4 @@ Databastest på en **tom isolerad testdatabas**: `npm run db:test`. Filerna inne
 `npm run contract:generate` genererar TypeScript från OpenAPI med låst openapi-typescript. Webbprojektet levereras med samma genererade fil och kontraktets SHA-256 i contracts.lock.json; det behöver inte lokal API-checkout. Uppdatering kräver ny kopia från samma verifierade kontraktsartefakt.
 
 Next.js/React/Supabase-SDK/Workflow är npm-beroenden, ingen Medusa-, Casbin-, ERPNext- eller Docuseal-kod har portats. Inbyggd BarcodeDetector används där tillgänglig, manuell kod finns alltid. ZXing-fallback och prov på verkliga iPhones återstår.
+

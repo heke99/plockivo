@@ -10,7 +10,7 @@ test('production cancellation accepts only version and explicit bounded reason',
  for(const body of [{version:0,reason:''},{version:'0',reason:'A'},{version:2147483647,reason:'A'},{version:0,reason:'x'.repeat(501)},{version:0,reason:'A',release_credit:true}])assert.equal(productionCancelInput.safeParse(body).success,false);
 });
 test('production SQL codes are matched exactly and unknown errors are sanitized',async()=>{
- for(const code of ['STOCK_UNAVAILABLE','INVENTORY_CONFLICT','FULFILLMENT_REQUIRED','FULFILLMENT_STATE_CONFLICT','IDEMPOTENCY_CONFLICT','MFA_REQUIRED']){
+ for(const code of ['PAYMENT_EXCEEDS_BALANCE','PAYMENT_REFERENCE_CONFLICT','PAYMENT_ALREADY_REVERSED','RECEIVABLE_STATE_CONFLICT','STOCK_UNAVAILABLE','INVENTORY_CONFLICT','FULFILLMENT_REQUIRED','FULFILLMENT_STATE_CONFLICT','IDEMPOTENCY_CONFLICT','MFA_REQUIRED']){
   assert.equal(knownSqlErrorCode({message:code}),code);
   const response=failure(code,'correlation',409);const body=await response.json();assert.equal(body.error.code,code);assert.notEqual(body.error.message,undefined);
  }

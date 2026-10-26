@@ -8,6 +8,8 @@ export const messages: Record<string,string> = {
   SALES_PAUSED:'Nya köp är pausade.', INTEGRATION_NOT_READY:'Handlarens verkliga integration är ännu inte aktiverad.',
   BUDGET_EXCEEDED:'Köpet överskrider ditt mandat eller projektets budget.', INTERNAL_ERROR:'Ett tekniskt fel uppstod. Kontrollera köpets status innan ett nytt försök.',
   QUANTITY_CONFLICT:'Mängden är redan disponerad. Hämta aktuellt underlag.', INSPECTION_REQUIRED:'Kontrollera samma rader och mottagare före testanspråket.', RETURN_QUANTITY_EXCEEDED:'Returmängden överstiger bekräftat utlämnad mängd.',
+  PAYMENT_EXCEEDS_BALANCE:'Beloppet överstiger orderns återstående saldo.', PAYMENT_REFERENCE_CONFLICT:'Betalningsreferensen används redan hos handlaren.',
+  PAYMENT_ALREADY_REVERSED:'Betalningen är redan återförd. Hämta aktuellt saldo.', RECEIVABLE_STATE_CONFLICT:'Fordringsunderlaget stämmer inte. Kontrollera aktuell order och betalningshistorik.',
   STOCK_UNAVAILABLE:'Lagret räcker inte till hela köpet. Hämta aktuellt underlag.', INVENTORY_CONFLICT:'Lager- eller reservationsunderlaget stämmer inte. Kontrollera orderns aktuella status.',
   FULFILLMENT_REQUIRED:'Ordern måste vara utlämnad innan faktureringsunderlaget kan hämtas.', FULFILLMENT_STATE_CONFLICT:'Ordern är redan utlämnad eller annullerad. Hämta aktuell status.',
   RATE_LIMITED:'För många anrop. Försök igen om en stund.',

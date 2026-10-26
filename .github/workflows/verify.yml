@@ -23,6 +23,15 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npx supabase start
+      - run: npx supabase start > /dev/null
       - run: npx supabase db reset --local
       - run: npm run db:test
+      - run: npm run build
+      - name: Real Auth and HTTP production flow (disposable local stack only)
+        run: npm run test:http-local
+        env:
+          PLOCKIVO_LOCAL_HTTP_TEST: '1'
+      - name: Remove disposable local database and Auth data
+        if: always()
+        run: npx supabase stop --no-backup
+

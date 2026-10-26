@@ -761,6 +761,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/production/orders/{id}/receivables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Current scoped billing mandate and MFA required. Records or reverses a merchant-declared receipt in the manual receivables ledger; no bank connection, payment initiation, invoice issuance or funds transfer. */
+        get: operations["getProductionReceivables"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Current scoped billing mandate and MFA required. Records or reverses a merchant-declared receipt in the manual receivables ledger; no bank connection, payment initiation, invoice issuance or funds transfer. */
+        post: operations["recordProductionPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders/{id}/payments/reverse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Current scoped billing mandate and MFA required. Records or reverses a merchant-declared receipt in the manual receivables ledger; no bank connection, payment initiation, invoice issuance or funds transfer. */
+        post: operations["reverseProductionPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1726,6 +1777,61 @@ export interface components {
             /** @constant */
             limit: 50;
             has_more: boolean;
+        };
+        ProductionPaymentInput: {
+            version: number;
+            /** @description Positive integer minor-unit amount, preserving exact decimal representation. Explicit manual reconciliation; no funds are moved. */
+            amount_minor: string;
+            payment_reference: string;
+            evidence_reference: string;
+            reason: string;
+        };
+        ProductionPaymentReversalInput: {
+            version: number;
+            /** Format: uuid */
+            receipt_id: string;
+            evidence_reference: string;
+            reason: string;
+        };
+        ProductionPaymentReversal: {
+            /** Format: uuid */
+            id: string;
+            evidence_reference: string;
+            reason: string;
+            /** Format: date-time */
+            reversed_at: string;
+        };
+        ProductionPaymentReceipt: {
+            /** Format: uuid */
+            id: string;
+            amount_minor: string;
+            payment_reference: string;
+            evidence_reference: string;
+            reason: string;
+            /** Format: date-time */
+            recorded_at: string;
+            reversed: boolean;
+            reversal: components["schemas"]["ProductionPaymentReversal"] | null;
+        };
+        ProductionReceivables: {
+            /** Format: uuid */
+            order_id: string;
+            /** Format: uuid */
+            tenant_id: string;
+            /** @constant */
+            mode: "production";
+            version: number;
+            /** @constant */
+            manual_reconciliation: true;
+            /** @constant */
+            currency: "SEK";
+            total_minor: string;
+            reservation_minor: string;
+            cancelled_released_minor: string;
+            paid_minor: string;
+            balance_minor: string;
+            receipts: components["schemas"]["ProductionPaymentReceipt"][];
+            receipts_truncated: boolean;
         };
     };
     responses: never;
@@ -5845,6 +5951,258 @@ export interface operations {
             };
             /** @description Version, idempotency, state, stock, credit or budget conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getProductionReceivables: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized current manual receivables ledger or original idempotent command result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionReceivables"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Order or receipt not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Request quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown service failure; inspect current ledger before retry */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    recordProductionPayment: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionPaymentInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized current manual receivables ledger or original idempotent command result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionReceivables"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Order or receipt not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Request quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown service failure; inspect current ledger before retry */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    reverseProductionPayment: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionPaymentReversalInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized current manual receivables ledger or original idempotent command result. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionReceivables"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Order or receipt not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Request quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unknown service failure; inspect current ledger before retry */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

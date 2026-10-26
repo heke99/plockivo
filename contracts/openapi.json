@@ -5377,6 +5377,249 @@
           }
         }
       }
+    },
+    "/v1/production/orders/{id}/receivables": {
+      "get": {
+        "operationId": "getProductionReceivables",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current manual receivables ledger or original idempotent command result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionReceivables"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          },
+          "404": {
+            "description": "Order or receipt not found"
+          },
+          "429": {
+            "description": "Request quota exceeded"
+          },
+          "500": {
+            "description": "Unknown service failure; inspect current ledger before retry"
+          }
+        },
+        "description": "Current scoped billing mandate and MFA required. Records or reverses a merchant-declared receipt in the manual receivables ledger; no bank connection, payment initiation, invoice issuance or funds transfer."
+      }
+    },
+    "/v1/production/orders/{id}/payments": {
+      "post": {
+        "operationId": "recordProductionPayment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current manual receivables ledger or original idempotent command result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionReceivables"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          },
+          "404": {
+            "description": "Order or receipt not found"
+          },
+          "429": {
+            "description": "Request quota exceeded"
+          },
+          "500": {
+            "description": "Unknown service failure; inspect current ledger before retry"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionPaymentInput"
+              }
+            }
+          }
+        },
+        "description": "Current scoped billing mandate and MFA required. Records or reverses a merchant-declared receipt in the manual receivables ledger; no bank connection, payment initiation, invoice issuance or funds transfer."
+      }
+    },
+    "/v1/production/orders/{id}/payments/reverse": {
+      "post": {
+        "operationId": "reverseProductionPayment",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current manual receivables ledger or original idempotent command result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionReceivables"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          },
+          "404": {
+            "description": "Order or receipt not found"
+          },
+          "429": {
+            "description": "Request quota exceeded"
+          },
+          "500": {
+            "description": "Unknown service failure; inspect current ledger before retry"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionPaymentReversalInput"
+              }
+            }
+          }
+        },
+        "description": "Current scoped billing mandate and MFA required. Records or reverses a merchant-declared receipt in the manual receivables ledger; no bank connection, payment initiation, invoice issuance or funds transfer."
+      }
     }
   },
   "components": {
@@ -9118,6 +9361,236 @@
             "type": "boolean"
           }
         }
+      },
+      "ProductionPaymentInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "amount_minor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$",
+            "description": "Positive integer minor-unit amount, preserving exact decimal representation. Explicit manual reconciliation; no funds are moved."
+          },
+          "payment_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "version",
+          "amount_minor",
+          "payment_reference",
+          "evidence_reference",
+          "reason"
+        ]
+      },
+      "ProductionPaymentReversalInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "receipt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "version",
+          "receipt_id",
+          "evidence_reference",
+          "reason"
+        ]
+      },
+      "ProductionPaymentReversal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          },
+          "reversed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "evidence_reference",
+          "reason",
+          "reversed_at"
+        ]
+      },
+      "ProductionPaymentReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "payment_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reversed": {
+            "type": "boolean"
+          },
+          "reversal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductionPaymentReversal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "amount_minor",
+          "payment_reference",
+          "evidence_reference",
+          "reason",
+          "recorded_at",
+          "reversed",
+          "reversal"
+        ]
+      },
+      "ProductionReceivables": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "const": "production"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "manual_reconciliation": {
+            "type": "boolean",
+            "const": true
+          },
+          "currency": {
+            "type": "string",
+            "const": "SEK"
+          },
+          "total_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "reservation_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "cancelled_released_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "paid_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "balance_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductionPaymentReceipt"
+            },
+            "maxItems": 100
+          },
+          "receipts_truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "order_id",
+          "tenant_id",
+          "mode",
+          "version",
+          "manual_reconciliation",
+          "currency",
+          "total_minor",
+          "reservation_minor",
+          "cancelled_released_minor",
+          "paid_minor",
+          "balance_minor",
+          "receipts",
+          "receipts_truncated"
+        ]
       }
     }
   }

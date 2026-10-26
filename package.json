@@ -11,7 +11,8 @@
     "standard": "python3 tools/engineering/check_standard.py --project .",
     "verify": "npm run standard && npm run typecheck && npm test && npm run build",
     "contract:generate": "openapi-typescript contracts/openapi.json -o contracts/generated.ts",
-    "db:test": "node tests/run-database.mjs"
+    "db:test": "node tests/run-database.mjs",
+    "test:http-local": "node tests/http-production.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.118.0",
