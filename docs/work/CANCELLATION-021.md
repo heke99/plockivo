@@ -11,3 +11,7 @@ Verifiering: tests/cancellation-input.test.mjs PASS. tests/cancellation.sql för
 ## Hosted-verifiering blockerad
 
 apply_migration avvisades av automatisk godkännandegranskning: "This applies a persistent Supabase schema and permission change, including granting cancellation authority to merchant roles, which is not explicitly authorized for this database or blast radius." Ingen omväg eller ny exekvering gjordes. Migrationen är inte tillämpad; riktig SQL-rollmatris är därmed ännu inte körd. Funktionen måste hållas avstängd med TEST_CANCELLATION_ENABLED=false och behöver exakt godkännande av migrationen och rollmandatet innan liveprov.
+
+## Godkänd och verifierad 2026-10-26
+
+Användaren godkände den väntande annulleringsändringen. Migration tillämpad som20261026004849_test_order_cancellation.sql. Riktig authenticated SQL-rollmatris PASS: kvarvarande mängd, skydd för claims, version/replay, audit och oförändrad kredit/budget. Testet rollback. TEST_CANCELLATION_ENABLED=true konfigurerad i API production för nästa deployment, fortfarande enbart syntetiska testorder enligt SQL-modeguard. Tidigare blockerartext är historik. Ingen verklig ekonomisk frigöring eller fysisk verksamhet öppnas.
