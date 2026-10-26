@@ -11,3 +11,7 @@ Public API GET /v1/fulfillment/{id}/billing-underlay, TestBillingUnderlay UI com
 ## Slutlig verifiering
 
 API verify PASS22 tester, typkontroll, standard och produktionsbygge. Webb verify PASS28 tester, typkontroll, standard och produktionsbygge. Chromium UI-only prov på port3723 PASS: frysta belopp, inte-faktura-märkning, gated503 rensar gammalt underlag,390/768/1440 utan overflow, inga pageerrors. Kontrollerade API-svar ger inte SQL-/Auth-bevis. SQL-rollmatris fortfarande UNRUN på grund av avvisad migration. Inga persistenta testdata eller externa effekter skapade.
+
+## Godkänd och aktiverad 2026-10-26
+
+Användaren godkände exakt väntande ändring. Tillämpad som20261026005834_test_billing_underlay.sql. Riktig SQL-rollmatris PASS: proportionering, totalbevarande, ingen bokföring/automatisk returkredit och obehörig nekad. Rollback utan persistenta testdata. TEST_BILLING_UNDERLAY_ENABLED=true konfigurerad inför nästa API deployment. Endast syntetisk läsning; ingen verklig fakturering eller kreditändring öppnad. Tidigare blockerartext ovan är historik.
