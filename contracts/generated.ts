@@ -501,6 +501,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/standalone-catalog/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Create 1–10 new preparation items for one tenant. Not atomic. Requires personal authorized AAL2 session. Retry identical full body and original Idempotency-Key; never reorder after partial failure. No unattended machine credentials provisioned. */
+        post: operations["importStandaloneCatalog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1044,6 +1061,41 @@ export interface components {
             credit_limit_minor: "0";
             /** @enum {string} */
             verification_status: "unverified";
+        };
+        CatalogImportNewItem: {
+            sku: string;
+            name: string;
+            unit: string;
+            quantity_step: string;
+            barcode: string | null;
+            package_quantity: string;
+            unit_price_minor: string;
+            vat_bps: number;
+            active: boolean;
+            self_scan: boolean;
+        };
+        CatalogImportInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            items: components["schemas"]["CatalogImportNewItem"][];
+        };
+        CatalogImportResult: {
+            /** @enum {string} */
+            status: "completed" | "stopped";
+            /** @enum {boolean} */
+            atomic: false;
+            saved: {
+                index: number;
+                data: components["schemas"]["StandaloneCatalogItem"];
+            }[];
+            failure: {
+                index: number;
+                code: string;
+                message: string;
+                /** @enum {string} */
+                outcome: "rejected" | "unknown";
+            } | null;
+            remaining: number;
         };
     };
     responses: never;
@@ -4062,6 +4114,80 @@ export interface operations {
                 content?: never;
             };
             /** @description Preparation register unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    importStandaloneCatalog: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogImportInput"];
+            };
+        };
+        responses: {
+            /** @description Independent row results. Inspect status and failure; previous rows may already be committed. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["CatalogImportResult"];
+                    };
+                };
+            };
+            /** @description Independent row results. Inspect status and failure; previous rows may already be committed. */
+            207: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["CatalogImportResult"];
+                    };
+                };
+            };
+            /** @description Invalid body/key; no rows written */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current session or permission denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Request quota exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Catalog feature unavailable */
             503: {
                 headers: {
                     [name: string]: unknown;

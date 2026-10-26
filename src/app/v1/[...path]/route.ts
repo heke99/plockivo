@@ -1,3 +1,4 @@
+import {runCatalogBatch} from '@/lib/catalog-batch';
 import {customerCreateInput} from '@/lib/customer-input';
 import {standaloneCatalogInput} from '@/lib/standalone-catalog-input';
 import { randomUUID, randomBytes } from 'node:crypto';
@@ -12,6 +13,7 @@ import {domainRequestInput,domainRemoveInput} from '@/lib/domain-input';
 import {profileInput} from '@/lib/profile-input';
 import {invitationInput,invitationTokenInput} from '@/lib/invitation-input';
 export const runtime='nodejs';
+export const maxDuration=300;
 export const dynamic='force-dynamic';
 async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
  const correlation=randomUUID();
@@ -56,7 +58,13 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
    const raw=await req.text();if(Buffer.byteLength(raw)>32768)return failure('VALIDATION_ERROR',correlation,413);
    const body=JSON.parse(raw);
    const key=keyInput.parse(req.headers.get('idempotency-key'));
-   if(path.join('/')==='merchant-customers'){result=await db.rpc('create_merchant_customer',{p_body:customerCreateInput.parse(body),p_key:key,p_correlation:correlation});
+   if(path.join('/')==='standalone-catalog/import'){
+    const batch=await runCatalogBatch(body,key,async (input,rowKey)=>{
+     const quota=await db.rpc('consume_api_quota');if(quota.error)return {data:null,error:quota.error};if(!quota.data)return {data:null,error:{message:'RATE_LIMITED'}};
+     return db.rpc('save_standalone_catalog',{p_body:input,p_key:rowKey,p_correlation:correlation});
+    });
+    return Response.json({data:batch,contract_version:'0.2.0'},{status:batch.status==='completed'?200:207,headers:{'Cache-Control':'no-store','X-Correlation-ID':correlation}});
+   } else if(path.join('/')==='merchant-customers'){result=await db.rpc('create_merchant_customer',{p_body:customerCreateInput.parse(body),p_key:key,p_correlation:correlation});
    } else if(path.join('/')==='standalone-catalog'){result=await db.rpc('save_standalone_catalog',{p_body:standaloneCatalogInput.parse(body),p_key:key,p_correlation:correlation});
    } else if(path[0]==='fulfillment'&&path.length===3&&path[2]==='inspect'){result=await db.rpc('inspect_test_order',{p_order:idInput.parse(path[1]),p_body:inspectionInput.parse(body),p_key:key,p_correlation:correlation});
    } else if(path[0]==='fulfillment'&&path.length===3&&path[2]==='claim'){result=await db.rpc('claim_test_order',{p_order:idInput.parse(path[1]),p_body:claimInput.parse(body),p_key:key,p_correlation:correlation});

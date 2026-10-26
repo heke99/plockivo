@@ -58,3 +58,6 @@ Varukontroll och beständigt claim/confirm samt returmottagning implementerade m
 ## Fristående och ansluten drift — 2026-10-26
 
 D012 och masterplanstillägg godkända: inget generellt ERP-krav. Standalone artikel/pris-preparationsregister024 implementerat men hosted migration auto-review avvisad, SQL ej verifierad, gatefalse. Kundadministration025 migration20261026010357 tillämpad och riktig SQL-rollmatris PASS; gate STANDALONE_CUSTOMERS_ENABLED=true konfigurerad nästa deploy. Nya konton suspended/purchaseblocked/zero credit, inga mandat. API verify25 tester/build PASS. Ingen produktionsförsäljning öppnad eller kredit beviljad. Register innebär inte färdig fristående checkout.
+
+## 2026-10-26 — Import via filer/API och livedatabassimulering
+Ny create-only API-batch1–10 artiklar, full inputvalidering, originalnyckel→deterministisk radnyckel, sekventiell save_standalone_catalog och stoppa vid första fel/okänt. HTTP207 redovisar partial result, ingen batchatomicitet. Befintlig person/MFA/tenantkontroll, perrad API-kvot. Kontraktet genererat och synkat till webb. CATALOG-IMPORT-SIM-031 körd hosted:3 artiklar, replay/konflikt/unikhet/tenant/MFA/audit PASS och rollback-cleanup8 nollor. Se IMPORT-E2E-034 för avgränsningar, inte full P0-verifiering.

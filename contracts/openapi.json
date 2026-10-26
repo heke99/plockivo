@@ -4145,6 +4145,87 @@
           }
         }
       }
+    },
+    "/v1/standalone-catalog/import": {
+      "post": {
+        "operationId": "importStandaloneCatalog",
+        "description": "Create 1–10 new preparation items for one tenant. Not atomic. Requires personal authorized AAL2 session. Retry identical full body and original Idempotency-Key; never reorder after partial failure. No unattended machine credentials provisioned.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogImportInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Independent row results. Inspect status and failure; previous rows may already be committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CatalogImportResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "207": {
+            "description": "Independent row results. Inspect status and failure; previous rows may already be committed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CatalogImportResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body/key; no rows written"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current session or permission denied"
+          },
+          "429": {
+            "description": "Request quota exceeded"
+          },
+          "503": {
+            "description": "Catalog feature unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6293,6 +6374,163 @@
             "enum": [
               "unverified"
             ]
+          }
+        }
+      },
+      "CatalogImportNewItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sku",
+          "name",
+          "unit",
+          "quantity_step",
+          "barcode",
+          "package_quantity",
+          "unit_price_minor",
+          "vat_bps",
+          "active",
+          "self_scan"
+        ],
+        "properties": {
+          "sku": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "quantity_step": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "package_quantity": {
+            "type": "string"
+          },
+          "unit_price_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "vat_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "self_scan": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CatalogImportInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenant_id",
+          "items"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 10,
+            "items": {
+              "$ref": "#/components/schemas/CatalogImportNewItem"
+            }
+          }
+        }
+      },
+      "CatalogImportResult": {
+        "type": "object",
+        "required": [
+          "status",
+          "atomic",
+          "saved",
+          "failure",
+          "remaining"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "stopped"
+            ]
+          },
+          "atomic": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "saved": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "index",
+                "data"
+              ],
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "data": {
+                  "$ref": "#/components/schemas/StandaloneCatalogItem"
+                }
+              }
+            }
+          },
+          "failure": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "index",
+              "code",
+              "message",
+              "outcome"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "rejected",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "remaining": {
+            "type": "integer",
+            "minimum": 0
           }
         }
       }
