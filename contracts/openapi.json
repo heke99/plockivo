@@ -4387,6 +4387,131 @@
           }
         }
       }
+    },
+    "/v1/merchant-customers/{customer_id}/policy": {
+      "get": {
+        "operationId": "getCustomerPolicy",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current policy or replayed decision snapshot, merchant manual authority only",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomerPolicy"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current MFA/customer management permission required"
+          },
+          "404": {
+            "description": "Account not found"
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveCustomerPolicy",
+        "description": "Explicit merchant manual decision. Active requires reviewed+terms_version; positive credit requires reviewed. No external credit/registry verification is implied. No mode restriction; does not activate production checkout. Exposure/reservations unchanged. Version/idempotency/audit atomic.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPolicyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current policy or replayed decision snapshot, merchant manual authority only",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CustomerPolicy"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input/account mismatch"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current MFA/customer management permission required"
+          },
+          "409": {
+            "description": "Version/idempotency conflict"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6810,6 +6935,157 @@
           },
           "vat_bps": {
             "type": "integer"
+          }
+        }
+      },
+      "CustomerPolicyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenant_id",
+          "customer_account_id",
+          "version",
+          "status",
+          "purchase_blocked",
+          "credit_limit_minor",
+          "terms_version",
+          "review_status",
+          "reason",
+          "evidence_reference"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "suspended"
+            ]
+          },
+          "purchase_blocked": {
+            "type": "boolean"
+          },
+          "credit_limit_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "terms_version": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "review_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "reviewed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "CustomerPolicy": {
+        "type": "object",
+        "required": [
+          "tenant_id",
+          "status",
+          "purchase_blocked",
+          "credit_limit_minor",
+          "terms_version",
+          "review_status",
+          "reason",
+          "evidence_reference",
+          "id",
+          "name",
+          "policy_version",
+          "exposure_minor",
+          "decision_authority"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "suspended"
+            ]
+          },
+          "purchase_blocked": {
+            "type": "boolean"
+          },
+          "credit_limit_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "terms_version": {
+            "type": "string",
+            "nullable": true,
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "review_status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "reviewed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 200
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "policy_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "exposure_minor": {
+            "type": "string"
+          },
+          "decision_authority": {
+            "type": "string",
+            "enum": [
+              "merchant-manual"
+            ]
           }
         }
       }

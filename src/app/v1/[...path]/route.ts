@@ -1,3 +1,4 @@
+import {customerPolicyInput} from '@/lib/customer-policy-input';
 import {testPublicationInput} from '@/lib/test-publication-input';
 import {catalogPageInput} from '@/lib/catalog-page-input';
 import {runCatalogBatch} from '@/lib/catalog-batch';
@@ -37,7 +38,8 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   if(limited.error)throw limited.error;
   if(!limited.data)return failure('RATE_LIMITED',correlation,429);
   let result;let invitationToken:string|undefined;
-  if(req.method==='GET'&&path.join('/')==='merchant-customers'){result=await db.rpc('list_merchant_customers',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
+  if(req.method==='GET'&&path[0]==='merchant-customers'&&path.length===3&&path[2]==='policy'){result=await db.rpc('get_customer_policy',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id')),p_account:idInput.parse(path[1])});
+  } else if(req.method==='GET'&&path.join('/')==='merchant-customers'){result=await db.rpc('list_merchant_customers',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path.join('/')==='standalone-catalog/page'){const q=new URL(req.url).searchParams;const input=catalogPageInput.parse({tenant_id:q.get('tenant_id'),query:q.get('q')??'',after_sku:q.get('after_sku'),after_id:q.get('after_id'),limit:q.get('limit')??'50'});result=await db.rpc('page_standalone_catalog',{p_tenant:input.tenant_id,p_query:input.query,p_after_sku:input.after_sku,p_after_id:input.after_id,p_limit:input.limit});
   } else if(req.method==='GET'&&path.join('/')==='standalone-catalog'){result=await db.rpc('list_standalone_catalog',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path[0]==='fulfillment'&&path.length===3&&path[2]==='billing-underlay'){result=await db.rpc('get_test_billing_underlay',{p_order:idInput.parse(path[1])});
@@ -62,7 +64,8 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
    const raw=await req.text();if(Buffer.byteLength(raw)>32768)return failure('VALIDATION_ERROR',correlation,413);
    const body=JSON.parse(raw);
    const key=keyInput.parse(req.headers.get('idempotency-key'));
-   if(path[0]==='standalone-catalog'&&path.length===3&&path[2]==='test-publication'){const input=testPublicationInput.parse(body);result=await db.rpc('publish_catalog_test',{p_tenant:input.tenant_id,p_item:idInput.parse(path[1]),p_version:input.version,p_account:input.customer_account_id,p_key:key,p_correlation:correlation});
+   if(path[0]==='merchant-customers'&&path.length===3&&path[2]==='policy'){const input=customerPolicyInput.parse(body);if(input.customer_account_id.toLowerCase()!==idInput.parse(path[1]).toLowerCase())return failure('VALIDATION_ERROR',correlation,400);result=await db.rpc('save_customer_policy',{p_body:input,p_key:key,p_correlation:correlation});
+   } else if(path[0]==='standalone-catalog'&&path.length===3&&path[2]==='test-publication'){const input=testPublicationInput.parse(body);result=await db.rpc('publish_catalog_test',{p_tenant:input.tenant_id,p_item:idInput.parse(path[1]),p_version:input.version,p_account:input.customer_account_id,p_key:key,p_correlation:correlation});
    } else if(path.join('/')==='standalone-catalog/import'){
     const batch=await runCatalogBatch(body,key,async (input,rowKey)=>{
      const quota=await db.rpc('consume_api_quota');if(quota.error)return {data:null,error:quota.error};if(!quota.data)return {data:null,error:{message:'RATE_LIMITED'}};

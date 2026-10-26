@@ -552,6 +552,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchant-customers/{customer_id}/policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCustomerPolicy"];
+        put?: never;
+        /** @description Explicit merchant manual decision. Active requires reviewed+terms_version; positive credit requires reviewed. No external credit/registry verification is implied. No mode restriction; does not activate production checkout. Exposure/reservations unchanged. Version/idempotency/audit atomic. */
+        post: operations["saveCustomerPolicy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1163,6 +1180,42 @@ export interface components {
             mode: "test";
             unit_price_minor: string;
             vat_bps: number;
+        };
+        CustomerPolicyInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            version: number;
+            /** @enum {string} */
+            status: "pending" | "active" | "suspended";
+            purchase_blocked: boolean;
+            credit_limit_minor: string;
+            terms_version: string | null;
+            /** @enum {string} */
+            review_status: "pending" | "reviewed";
+            reason: string;
+            evidence_reference: string;
+        };
+        CustomerPolicy: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** @enum {string} */
+            status: "pending" | "active" | "suspended";
+            purchase_blocked: boolean;
+            credit_limit_minor: string;
+            terms_version: string | null;
+            /** @enum {string} */
+            review_status: "pending" | "reviewed";
+            reason: string;
+            evidence_reference: string;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            policy_version: number;
+            exposure_minor: string;
+            /** @enum {string} */
+            decision_authority: "merchant-manual";
         };
     };
     responses: never;
@@ -4377,6 +4430,111 @@ export interface operations {
             };
             /** @description Feature unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getCustomerPolicy: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current policy or replayed decision snapshot, merchant manual authority only */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["CustomerPolicy"];
+                    };
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current MFA/customer management permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Account not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveCustomerPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                customer_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerPolicyInput"];
+            };
+        };
+        responses: {
+            /** @description Current policy or replayed decision snapshot, merchant manual authority only */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["CustomerPolicy"];
+                    };
+                };
+            };
+            /** @description Invalid input/account mismatch */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current MFA/customer management permission required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version/idempotency conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
