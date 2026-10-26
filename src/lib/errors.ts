@@ -8,9 +8,17 @@ export const messages: Record<string,string> = {
   SALES_PAUSED:'Nya köp är pausade.', INTEGRATION_NOT_READY:'Handlarens verkliga integration är ännu inte aktiverad.',
   BUDGET_EXCEEDED:'Köpet överskrider ditt mandat eller projektets budget.', INTERNAL_ERROR:'Ett tekniskt fel uppstod. Kontrollera köpets status innan ett nytt försök.',
   QUANTITY_CONFLICT:'Mängden är redan disponerad. Hämta aktuellt underlag.', INSPECTION_REQUIRED:'Kontrollera samma rader och mottagare före testanspråket.', RETURN_QUANTITY_EXCEEDED:'Returmängden överstiger bekräftat utlämnad mängd.',
+  STOCK_UNAVAILABLE:'Lagret räcker inte till hela köpet. Hämta aktuellt underlag.', INVENTORY_CONFLICT:'Lager- eller reservationsunderlaget stämmer inte. Kontrollera orderns aktuella status.',
+  FULFILLMENT_REQUIRED:'Ordern måste vara utlämnad innan faktureringsunderlaget kan hämtas.', FULFILLMENT_STATE_CONFLICT:'Ordern är redan utlämnad eller annullerad. Hämta aktuell status.',
   RATE_LIMITED:'För många anrop. Försök igen om en stund.',
 };
 export function failure(code: string, correlationId: string, status = 400) {
  return Response.json({error:{code,message:messages[code]??messages.INTERNAL_ERROR,correlation_id:correlationId}}, {status,headers:{'Cache-Control':'no-store','X-Correlation-ID':correlationId}});
 }
 
+
+// Provider details never leave the API. Match only exact, enumerated domain codes.
+export function knownSqlErrorCode(error:unknown):string|null{
+ const value=error&&typeof error==='object'&&'message'in error?error.message:null;
+ return typeof value==='string'&&Object.prototype.hasOwnProperty.call(messages,value)?value:null;
+}

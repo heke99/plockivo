@@ -1,0 +1,35 @@
+begin;
+set local statement_timeout='20s';
+insert into auth.users(id,email,email_confirmed_at) values('53000000-0000-4000-8000-000000000001','session-regression@plockivo.invalid',now());
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values('53000000-0000-4000-8000-000000000002','53000000-0000-4000-8000-000000000001','aal1',now(),now());
+insert into public.merchants(id,slug,name,legal_name,organization_number) values('53000000-0000-4000-8000-000000000003','session-regression-053','Session regression','Session regression','SIM053');
+insert into public.memberships(user_id,tenant_id,role) values('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000003','buyer');
+select set_config('request.jwt.claims','{"sub":"53000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1","session_id":"53000000-0000-4000-8000-000000000002"}',true);
+set local role authenticated;
+do $$begin
+ if not private.allowed('53000000-0000-4000-8000-000000000003',null,null,null,'purchases.prepare') then raise exception 'live optional-MFA buyer denied';end if;
+end$$;
+reset role;
+update auth.sessions set not_after=now()-interval '1 second' where id='53000000-0000-4000-8000-000000000002';
+set local role authenticated;
+do $$begin
+ if private.allowed('53000000-0000-4000-8000-000000000003',null,null,null,'purchases.prepare') then raise exception 'expired session allowed';end if;
+ begin perform public.prepare_purchase('{"tenant_id":"53000000-0000-4000-8000-000000000003","customer_account_id":null,"store_id":null,"project_id":null,"reference":"no live session","lines":[]}','session-regression-053',gen_random_uuid());raise exception 'expired RPC allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
+end$$;
+reset role;
+update auth.sessions set not_after=null where id='53000000-0000-4000-8000-000000000002';
+update auth.users set banned_until=now()+interval '1 day' where id='53000000-0000-4000-8000-000000000001';
+set local role authenticated;
+do $$begin if private.allowed('53000000-0000-4000-8000-000000000003',null,null,null,'purchases.prepare') then raise exception 'banned user allowed';end if;end$$;
+reset role;
+update auth.users set banned_until=null,email_confirmed_at=null where id='53000000-0000-4000-8000-000000000001';
+set local role authenticated;
+do $$begin if private.allowed('53000000-0000-4000-8000-000000000003',null,null,null,'purchases.prepare') then raise exception 'unverified user allowed';end if;end$$;
+reset role;
+update auth.users set email_confirmed_at=now() where id='53000000-0000-4000-8000-000000000001';
+select set_config('request.jwt.claims','{"sub":"53000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal1","session_id":"53000000-0000-4000-8000-000000000099"}',true);
+set local role authenticated;
+do $$begin if private.allowed('53000000-0000-4000-8000-000000000003',null,null,null,'purchases.prepare') then raise exception 'missing session allowed';end if;end$$;
+reset role;
+rollback;
+select (select count(*) from auth.users where id='53000000-0000-4000-8000-000000000001') as users_left,(select count(*) from public.merchants where id='53000000-0000-4000-8000-000000000003') as merchants_left;

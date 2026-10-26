@@ -2,7 +2,8 @@ begin;
 set local lock_timeout='5s';
 set local statement_timeout='30s';
 -- Namespace33000000. Entire synthetic source-to-test-order journey is rolled back.
-insert into auth.users(id,email) values('33000000-0000-4000-8000-000000000005','catalog-purchase-sim040@plockivo.invalid');
+-- Live-person boundary requires a verified Auth identity and the real fixture session below.
+insert into auth.users(id,email,email_confirmed_at) values('33000000-0000-4000-8000-000000000005','catalog-purchase-sim040@plockivo.invalid',now());
 insert into public.merchants(id,slug,name,legal_name,organization_number,mode,sales_paused) values
 ('33000000-0000-4000-8000-000000000001','catalog-purchase-sim040','Catalog test A','Catalog test A','SIM040-A','test',false),
 ('33000000-0000-4000-8000-000000000008','catalog-production-sim040','Catalog production guard','Catalog production guard','SIM040-P','production',true),

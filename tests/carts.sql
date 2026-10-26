@@ -1,7 +1,12 @@
 begin;
 -- Synthetic fixtures, isolated UUID namespace. Never real business data.
 
-insert into auth.users(id,email) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid'),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid'),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid');
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid',now());
+-- Real verified identity/session fixtures required by the live-person boundary.
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values
+('00000000-0000-4000-8000-000000000105','00000000-0000-4000-8000-000000000005','aal1',now(),now()),
+('00000000-0000-4000-8000-000000000107','00000000-0000-4000-8000-000000000007','aal1',now(),now()),
+('00000000-0000-4000-8000-000000000111','00000000-0000-4000-8000-000000000011','aal1',now(),now());
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('00000000-0000-4000-8000-000000000001','e2e-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('00000000-0000-4000-8000-000000000008','e2e-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -15,7 +20,7 @@ insert into public.product_barcodes values('00000000-0000-4000-8000-000000000001
 insert into private.test_prices values('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000006',10000,2500,1);
 
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000105"}',true);
 do $$declare b jsonb:='{"id":null,"version":0,"tenant_id":"00000000-0000-4000-8000-000000000001","customer_account_id":"00000000-0000-4000-8000-000000000002","store_id":"00000000-0000-4000-8000-000000000003","project_id":"00000000-0000-4000-8000-000000000004","reference":"CART-TEST","lines":[{"product_id":"00000000-0000-4000-8000-000000000006","quantity":"2"}]}';c jsonb;c2 jsonb;i jsonb;i2 jsonb;o jsonb;begin
  c:=public.save_cart(b,'cart-create-000001',gen_random_uuid());
  assert c->>'version'='1','initial revision';
@@ -49,7 +54,7 @@ reset role;
 insert into public.memberships(user_id,tenant_id,customer_account_id,store_id,project_id,role,per_purchase_minor,approval_threshold_minor)
 values('00000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000004','buyer',100000,100000);
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000007","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000007","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000107"}',true);
 do $$begin
  assert public.get_current_cart('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000004') is null,'person isolation';
  begin perform public.submit_cart(current_setting('test.cart')::uuid,2,'cart-wrongowner01',gen_random_uuid());raise exception 'wrong owner allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
@@ -61,7 +66,7 @@ do $$begin
 end$$;
 -- Current mandate is checked before reading or replaying any saved cart.
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000105"}',true);
 do $$begin
  begin perform public.get_current_cart('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000009','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000004');raise exception 'wrong account allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
  begin perform public.get_current_cart('00000000-0000-4000-8000-000000000008','00000000-0000-4000-8000-000000000010','00000000-0000-4000-8000-000000000003','00000000-0000-4000-8000-000000000004');raise exception 'wrong tenant allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
@@ -76,3 +81,4 @@ end$$;
 reset role;
 select 'PASS: durable cart, owner isolation, version conflict, replay, one quote per revision, invalidated quote, next purchase' as result;
 rollback;
+

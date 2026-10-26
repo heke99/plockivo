@@ -569,6 +569,198 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/production/setup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProductionSetup"];
+        put?: never;
+        post: operations["saveProductionSetup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["publishProductionCatalog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adjustProductionStock"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["saveProductionStore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["saveProductionProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/invitation-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["setupProductionInvitationAccess"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant-bootstrap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["bootstrapMerchant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProductionOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders/{id}/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getProductionBilling"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["completeProductionOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelProductionOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/production/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listProductionOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -609,7 +801,8 @@ export interface components {
             role: string;
             merchant: string;
             merchant_slug: string;
-            mode: string;
+            /** @enum {string} */
+            mode: "test" | "production";
             account: string | null;
             permissions: string[];
             branding: components["schemas"]["BuyerBranding"];
@@ -674,8 +867,22 @@ export interface components {
             terms_version: string;
             seller: components["schemas"]["Party"];
             buyer: components["schemas"]["Party"];
-            price_authority: string;
+            /** @enum {string} */
+            price_authority: "synthetic-test-adapter" | "plockivo-standalone";
             rounding: string;
+            /** @constant */
+            credit_authority?: "merchant-manual";
+            /** @constant */
+            inventory_authority?: "plockivo";
+            /** @constant */
+            billing_authority?: "manual-export";
+            configuration_version?: number;
+            /** Format: uuid */
+            store_id?: string;
+            /** Format: uuid */
+            customer_account_id?: string;
+            /** Format: uuid */
+            project_id?: string;
         };
         OrderSummary: {
             /** Format: uuid */
@@ -683,6 +890,8 @@ export interface components {
             /** @enum {string} */
             status: "accepted";
             total_minor: string;
+            /** @enum {string} */
+            mode?: "test" | "production";
         };
         Intent: {
             /** Format: uuid */
@@ -703,7 +912,7 @@ export interface components {
             /** Format: date-time */
             expires_at: string;
             /** @enum {string} */
-            mode?: "test";
+            mode?: "test" | "production";
             order?: components["schemas"]["OrderSummary"] | null;
         };
         History: {
@@ -731,7 +940,7 @@ export interface components {
             /** @enum {string} */
             status: "accepted";
             /** @enum {string} */
-            mode: "test";
+            mode: "test" | "production";
             total_minor: string;
         };
         ApprovalDecision: {
@@ -895,8 +1104,8 @@ export interface components {
         OrderConfirmation: {
             /** Format: uuid */
             order_id: string;
-            /** @constant */
-            mode: "test";
+            /** @enum {string} */
+            mode: "test" | "production";
             /** @enum {string} */
             status: "pending" | "ready";
             document: null | {
@@ -1037,7 +1246,8 @@ export interface components {
         TestBillingUnderlay: {
             order_id: string;
             tenant_id: string;
-            mode: string;
+            /** @constant */
+            mode: "test";
             status: string;
             currency: string;
             allocation_policy: string;
@@ -1216,6 +1426,306 @@ export interface components {
             exposure_minor: string;
             /** @enum {string} */
             decision_authority: "merchant-manual";
+        };
+        ProductionSetupConfig: {
+            /** Format: uuid */
+            tenant_id: string;
+            version: number;
+            /** @constant */
+            price_authority: "plockivo";
+            /** @constant */
+            credit_authority: "merchant-manual";
+            /** @constant */
+            inventory_authority: "plockivo";
+            /** @constant */
+            billing_authority: "manual-export";
+            reason: string;
+            evidence_reference: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        ProductionSetupInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            version: number;
+            /** @constant */
+            price_authority: "plockivo";
+            /** @constant */
+            credit_authority: "merchant-manual";
+            /** @constant */
+            inventory_authority: "plockivo";
+            /** @constant */
+            billing_authority: "manual-export";
+            activate_production: boolean;
+            sales_enabled: boolean;
+            reason: string;
+            evidence_reference: string;
+        };
+        ProductionAccount: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @constant */
+            status: "active";
+            /** @constant */
+            purchase_blocked: false;
+            terms_version: string;
+        };
+        ProductionStore: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            tenant_id?: string;
+            name: string;
+            code: string;
+            sales_paused: boolean;
+            version: number;
+        };
+        ProductionStoreInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            id: string | null;
+            version: number;
+            name: string;
+            code: string;
+            sales_paused: boolean;
+        };
+        ProductionProject: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            tenant_id?: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            name: string;
+            budget_minor: string;
+            committed_minor: string;
+            active: boolean;
+            version: number;
+        };
+        ProductionProjectInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            id: string | null;
+            version: number;
+            /** Format: uuid */
+            customer_account_id: string;
+            name: string;
+            budget_minor: string;
+            active: boolean;
+        };
+        ProductionProduct: {
+            /** Format: uuid */
+            id: string;
+            sku: string;
+            name: string;
+            unit: string;
+            quantity_step: string;
+            /** Format: uuid */
+            source_item_id: string;
+            source_version: number;
+        };
+        ProductionPrice: {
+            /** Format: uuid */
+            customer_account_id: string;
+            /** Format: uuid */
+            product_id: string;
+            unit_price_minor: string;
+            vat_bps: number;
+            revision: number;
+        };
+        ProductionStock: {
+            /** Format: uuid */
+            tenant_id?: string;
+            /** Format: uuid */
+            store_id: string;
+            /** Format: uuid */
+            product_id: string;
+            on_hand: string;
+            reserved: string;
+            version: number;
+        };
+        ProductionStockInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            store_id: string;
+            /** Format: uuid */
+            product_id: string;
+            version: number;
+            on_hand: string;
+            reason: string;
+            evidence_reference: string;
+        };
+        ProductionCatalogInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            item_id: string;
+            source_version: number;
+            /** Format: uuid */
+            customer_account_id: string;
+            version: number;
+        };
+        ProductionCatalogPublication: {
+            /** Format: uuid */
+            product_id: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            /** Format: uuid */
+            source_item_id: string;
+            source_version: number;
+            /** @constant */
+            mode: "production";
+            unit_price_minor: string;
+            vat_bps: number;
+            revision: number;
+        };
+        ProductionSetup: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** @enum {string} */
+            mode: "test" | "production";
+            sales_paused: boolean;
+            setup: components["schemas"]["ProductionSetupConfig"] | null;
+            accounts: components["schemas"]["ProductionAccount"][];
+            stores: components["schemas"]["ProductionStore"][];
+            projects: components["schemas"]["ProductionProject"][];
+            products: components["schemas"]["ProductionProduct"][];
+            prices: components["schemas"]["ProductionPrice"][];
+            stock: components["schemas"]["ProductionStock"][];
+            limits: {
+                /** @constant */
+                accounts: 200;
+                /** @constant */
+                stores: 200;
+                /** @constant */
+                projects: 200;
+                /** @constant */
+                products: 200;
+                /** @constant */
+                prices: 200;
+                /** @constant */
+                stock: 200;
+            };
+            truncated: {
+                accounts: boolean;
+                stores: boolean;
+                projects: boolean;
+                products: boolean;
+                prices: boolean;
+                stock: boolean;
+            };
+        };
+        ProductionOrderLine: {
+            /** Format: uuid */
+            order_line_id: string;
+            /** Format: uuid */
+            product_id: string;
+            name: string;
+            quantity: string;
+        };
+        ProductionOrder: {
+            /** Format: uuid */
+            order_id: string;
+            /** Format: uuid */
+            tenant_id: string;
+            /** @constant */
+            mode: "production";
+            version: number;
+            /** @enum {string} */
+            state: "reserved" | "fulfilled" | "cancelled";
+            recipient_reference: string | null;
+            credit_released_minor: string;
+            snapshot: components["schemas"]["Quote"];
+            total_minor: string;
+            lines: components["schemas"]["ProductionOrderLine"][];
+        };
+        ProductionCompleteInput: {
+            version: number;
+            recipient_reference: string;
+            /** @constant */
+            checked: true;
+        };
+        ProductionCancelInput: {
+            version: number;
+            reason: string;
+        };
+        ProductionBilling: {
+            /** Format: uuid */
+            order_id: string;
+            /** @constant */
+            mode: "production";
+            /** @constant */
+            status: "ready_for_manual_export";
+            snapshot: components["schemas"]["Quote"];
+            total_minor: string;
+        };
+        MerchantBootstrapInput: {
+            slug: string;
+            name: string;
+            legal_name: string;
+            organization_number: string;
+            reason: string;
+        };
+        MerchantBootstrap: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            membership_id: string;
+            slug: string;
+            name: string;
+            /** @constant */
+            mode: "production";
+            /** @constant */
+            sales_paused: true;
+            /** @constant */
+            self_declared_business: true;
+        };
+        ProductionInvitationAccessInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            /** @description Positive amount in minor units. Explicit delegation limit chosen by the authorized merchant administrator; enforced by SQL. */
+            per_purchase_minor: string;
+            /** @description Zero or greater and no greater than per_purchase_minor; enforced by SQL. */
+            approval_threshold_minor: string;
+            /**
+             * Format: date-time
+             * @description Later than five minutes from now and no later than 366 days or the delegating administrator mandate expiry; enforced by SQL.
+             */
+            valid_to: string;
+            reason: string;
+        };
+        ProductionInvitationAccess: {
+            /** Format: uuid */
+            membership_id: string;
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            customer_account_id: string;
+            per_purchase_minor: string;
+            approval_threshold_minor: string;
+            /** Format: date-time */
+            valid_to: string;
+        };
+        ProductionOrderQueueItem: {
+            /** Format: uuid */
+            order_id: string;
+            /** Format: uuid */
+            purchase_intent_id: string;
+            total_minor: string;
+            /** @enum {string} */
+            state: "reserved" | "fulfilled" | "cancelled";
+            /** Format: date-time */
+            created_at: string;
+        };
+        ProductionOrderQueue: {
+            items: components["schemas"]["ProductionOrderQueueItem"][];
+            /** @constant */
+            limit: 50;
+            has_more: boolean;
         };
     };
     responses: never;
@@ -4535,6 +5045,813 @@ export interface operations {
             };
             /** @description Version/idempotency conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getProductionSetup: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionSetup"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveProductionSetup: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionSetupInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionSetup"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    publishProductionCatalog: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionCatalogInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionCatalogPublication"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adjustProductionStock: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionStockInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionStock"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveProductionStore: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionStoreInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionStore"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveProductionProject: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionProjectInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionProject"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    setupProductionInvitationAccess: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionInvitationAccessInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionInvitationAccess"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    bootstrapMerchant: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MerchantBootstrapInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["MerchantBootstrap"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getProductionOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionOrder"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    getProductionBilling: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionBilling"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    completeProductionOrder: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionCompleteInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionOrder"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    cancelProductionOrder: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductionCancelInput"];
+            };
+        };
+        responses: {
+            /** @description Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionOrder"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listProductionOrders: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current authorized production orders; bounded queue with explicit has_more, no global visibility. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["ProductionOrderQueue"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Current mandate or MFA required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, idempotency, state, stock, credit or budget conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Service or required authority unavailable */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -3,7 +3,7 @@
   "info": {
     "title": "Plockivo API",
     "version": "0.2.0",
-    "description": "Synthetic test purchase flow. Production integrations and fulfillment are not implemented."
+    "description": "Standalone production purchases with explicit merchant credit, stock reservations, controlled fulfillment and manual billing export. Isolated synthetic test flows remain available. No automatic invoice issuance or payment settlement."
   },
   "paths": {
     "/v1/context": {
@@ -4512,6 +4512,871 @@
           }
         }
       }
+    },
+    "/v1/production/setup": {
+      "get": {
+        "operationId": "getProductionSetup",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionSetup"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveProductionSetup",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionSetup"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionSetupInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/catalog": {
+      "post": {
+        "operationId": "publishProductionCatalog",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionCatalogPublication"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionCatalogInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/stock": {
+      "post": {
+        "operationId": "adjustProductionStock",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionStock"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionStockInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/stores": {
+      "post": {
+        "operationId": "saveProductionStore",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionStore"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionStoreInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/projects": {
+      "post": {
+        "operationId": "saveProductionProject",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionProject"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionProjectInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/invitation-access": {
+      "post": {
+        "operationId": "setupProductionInvitationAccess",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionInvitationAccess"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionInvitationAccessInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/merchant-bootstrap": {
+      "post": {
+        "operationId": "bootstrapMerchant",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MerchantBootstrap"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantBootstrapInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/orders/{id}": {
+      "get": {
+        "operationId": "getProductionOrder",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionOrder"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        }
+      }
+    },
+    "/v1/production/orders/{id}/billing": {
+      "get": {
+        "operationId": "getProductionBilling",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionBilling"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        }
+      }
+    },
+    "/v1/production/orders/{id}/complete": {
+      "post": {
+        "operationId": "completeProductionOrder",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionOrder"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionCompleteInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/orders/{id}/cancel": {
+      "post": {
+        "operationId": "cancelProductionOrder",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9:_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result or idempotent replay. Production billing remains a manual export, not an issued invoice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionOrder"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionCancelInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/production/orders": {
+      "get": {
+        "operationId": "listProductionOrders",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized production orders; bounded queue with explicit has_more, no global visibility.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProductionOrderQueue"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "Current mandate or MFA required"
+          },
+          "409": {
+            "description": "Version, idempotency, state, stock, credit or budget conflict"
+          },
+          "503": {
+            "description": "Service or required authority unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4674,7 +5539,11 @@
             "type": "string"
           },
           "mode": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "test",
+              "production"
+            ]
           },
           "account": {
             "anyOf": [
@@ -4943,10 +5812,42 @@
             "$ref": "#/components/schemas/Party"
           },
           "price_authority": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "synthetic-test-adapter",
+              "plockivo-standalone"
+            ]
           },
           "rounding": {
             "type": "string"
+          },
+          "credit_authority": {
+            "type": "string",
+            "const": "merchant-manual"
+          },
+          "inventory_authority": {
+            "type": "string",
+            "const": "plockivo"
+          },
+          "billing_authority": {
+            "type": "string",
+            "const": "manual-export"
+          },
+          "configuration_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "store_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -4978,6 +5879,13 @@
           "total_minor": {
             "type": "string",
             "pattern": "^[0-9]+$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "test",
+              "production"
+            ]
           }
         },
         "required": [
@@ -5035,7 +5943,8 @@
           "mode": {
             "type": "string",
             "enum": [
-              "test"
+              "test",
+              "production"
             ]
           },
           "order": {
@@ -5130,7 +6039,8 @@
           "mode": {
             "type": "string",
             "enum": [
-              "test"
+              "test",
+              "production"
             ]
           },
           "total_minor": {
@@ -5781,7 +6691,10 @@
           },
           "mode": {
             "type": "string",
-            "const": "test"
+            "enum": [
+              "test",
+              "production"
+            ]
           },
           "status": {
             "type": "string",
@@ -6366,7 +7279,8 @@
             "type": "string"
           },
           "mode": {
-            "type": "string"
+            "type": "string",
+            "const": "test"
           },
           "status": {
             "type": "string"
@@ -7086,6 +8000,1122 @@
             "enum": [
               "merchant-manual"
             ]
+          }
+        }
+      },
+      "ProductionSetupConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "price_authority": {
+            "type": "string",
+            "const": "plockivo"
+          },
+          "credit_authority": {
+            "type": "string",
+            "const": "merchant-manual"
+          },
+          "inventory_authority": {
+            "type": "string",
+            "const": "plockivo"
+          },
+          "billing_authority": {
+            "type": "string",
+            "const": "manual-export"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "version",
+          "price_authority",
+          "credit_authority",
+          "inventory_authority",
+          "billing_authority",
+          "reason",
+          "evidence_reference",
+          "updated_at"
+        ]
+      },
+      "ProductionSetupInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "price_authority": {
+            "type": "string",
+            "const": "plockivo"
+          },
+          "credit_authority": {
+            "type": "string",
+            "const": "merchant-manual"
+          },
+          "inventory_authority": {
+            "type": "string",
+            "const": "plockivo"
+          },
+          "billing_authority": {
+            "type": "string",
+            "const": "manual-export"
+          },
+          "activate_production": {
+            "type": "boolean"
+          },
+          "sales_enabled": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "tenant_id",
+          "version",
+          "price_authority",
+          "credit_authority",
+          "inventory_authority",
+          "billing_authority",
+          "activate_production",
+          "sales_enabled",
+          "reason",
+          "evidence_reference"
+        ]
+      },
+      "ProductionAccount": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "const": "active"
+          },
+          "purchase_blocked": {
+            "type": "boolean",
+            "const": false
+          },
+          "terms_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "purchase_blocked",
+          "terms_version"
+        ]
+      },
+      "ProductionStore": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "sales_paused": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "sales_paused",
+          "version"
+        ]
+      },
+      "ProductionStoreInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "sales_paused": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "id",
+          "version",
+          "name",
+          "code",
+          "sales_paused"
+        ]
+      },
+      "ProductionProject": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "budget_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "committed_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "id",
+          "customer_account_id",
+          "name",
+          "budget_minor",
+          "committed_minor",
+          "active",
+          "version"
+        ]
+      },
+      "ProductionProjectInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "budget_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "id",
+          "version",
+          "customer_account_id",
+          "name",
+          "budget_minor",
+          "active"
+        ]
+      },
+      "ProductionProduct": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity_step": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})([.][0-9]{1,6})?$"
+          },
+          "source_item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "unit",
+          "quantity_step",
+          "source_item_id",
+          "source_version"
+        ]
+      },
+      "ProductionPrice": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "unit_price_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "vat_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "customer_account_id",
+          "product_id",
+          "unit_price_minor",
+          "vat_bps",
+          "revision"
+        ]
+      },
+      "ProductionStock": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "store_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "on_hand": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})([.][0-9]{1,6})?$"
+          },
+          "reserved": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})([.][0-9]{1,6})?$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "store_id",
+          "product_id",
+          "on_hand",
+          "reserved",
+          "version"
+        ]
+      },
+      "ProductionStockInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "store_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "on_hand": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})([.][0-9]{1,6})?$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "tenant_id",
+          "store_id",
+          "product_id",
+          "version",
+          "on_hand",
+          "reason",
+          "evidence_reference"
+        ]
+      },
+      "ProductionCatalogInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "tenant_id",
+          "item_id",
+          "source_version",
+          "customer_account_id",
+          "version"
+        ]
+      },
+      "ProductionCatalogPublication": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mode": {
+            "type": "string",
+            "const": "production"
+          },
+          "unit_price_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "vat_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "product_id",
+          "customer_account_id",
+          "source_item_id",
+          "source_version",
+          "mode",
+          "unit_price_minor",
+          "vat_bps",
+          "revision"
+        ]
+      },
+      "ProductionSetup": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "test",
+              "production"
+            ]
+          },
+          "sales_paused": {
+            "type": "boolean"
+          },
+          "setup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductionSetupConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accounts": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ProductionAccount"
+            }
+          },
+          "stores": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ProductionStore"
+            }
+          },
+          "projects": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ProductionProject"
+            }
+          },
+          "products": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ProductionProduct"
+            }
+          },
+          "prices": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ProductionPrice"
+            }
+          },
+          "stock": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/components/schemas/ProductionStock"
+            }
+          },
+          "limits": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "accounts": {
+                "type": "integer",
+                "const": 200
+              },
+              "stores": {
+                "type": "integer",
+                "const": 200
+              },
+              "projects": {
+                "type": "integer",
+                "const": 200
+              },
+              "products": {
+                "type": "integer",
+                "const": 200
+              },
+              "prices": {
+                "type": "integer",
+                "const": 200
+              },
+              "stock": {
+                "type": "integer",
+                "const": 200
+              }
+            },
+            "required": [
+              "accounts",
+              "stores",
+              "projects",
+              "products",
+              "prices",
+              "stock"
+            ]
+          },
+          "truncated": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "accounts": {
+                "type": "boolean"
+              },
+              "stores": {
+                "type": "boolean"
+              },
+              "projects": {
+                "type": "boolean"
+              },
+              "products": {
+                "type": "boolean"
+              },
+              "prices": {
+                "type": "boolean"
+              },
+              "stock": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "accounts",
+              "stores",
+              "projects",
+              "products",
+              "prices",
+              "stock"
+            ]
+          }
+        },
+        "required": [
+          "tenant_id",
+          "mode",
+          "sales_paused",
+          "setup",
+          "accounts",
+          "stores",
+          "projects",
+          "products",
+          "prices",
+          "stock",
+          "limits",
+          "truncated"
+        ]
+      },
+      "ProductionOrderLine": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_line_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})([.][0-9]{1,6})?$"
+          }
+        },
+        "required": [
+          "order_line_id",
+          "product_id",
+          "name",
+          "quantity"
+        ]
+      },
+      "ProductionOrder": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "const": "production"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "reserved",
+              "fulfilled",
+              "cancelled"
+            ]
+          },
+          "recipient_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "credit_released_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "total_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "lines": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/ProductionOrderLine"
+            }
+          }
+        },
+        "required": [
+          "order_id",
+          "tenant_id",
+          "mode",
+          "version",
+          "state",
+          "recipient_reference",
+          "credit_released_minor",
+          "snapshot",
+          "total_minor",
+          "lines"
+        ]
+      },
+      "ProductionCompleteInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "recipient_reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "checked": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "version",
+          "recipient_reference",
+          "checked"
+        ]
+      },
+      "ProductionCancelInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "version",
+          "reason"
+        ]
+      },
+      "ProductionBilling": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "const": "production"
+          },
+          "status": {
+            "type": "string",
+            "const": "ready_for_manual_export"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "total_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          }
+        },
+        "required": [
+          "order_id",
+          "mode",
+          "status",
+          "snapshot",
+          "total_minor"
+        ]
+      },
+      "MerchantBootstrapInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{2,40}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "legal_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "organization_number": {
+            "type": "string",
+            "pattern": "^[0-9]{6}-?[0-9]{4}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "legal_name",
+          "organization_number",
+          "reason"
+        ]
+      },
+      "MerchantBootstrap": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "membership_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "const": "production"
+          },
+          "sales_paused": {
+            "type": "boolean",
+            "const": true
+          },
+          "self_declared_business": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "membership_id",
+          "slug",
+          "name",
+          "mode",
+          "sales_paused",
+          "self_declared_business"
+        ]
+      },
+      "ProductionInvitationAccessInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "per_purchase_minor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$",
+            "description": "Positive amount in minor units. Explicit delegation limit chosen by the authorized merchant administrator; enforced by SQL."
+          },
+          "approval_threshold_minor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$",
+            "description": "Zero or greater and no greater than per_purchase_minor; enforced by SQL."
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Later than five minutes from now and no later than 366 days or the delegating administrator mandate expiry; enforced by SQL."
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "tenant_id",
+          "customer_account_id",
+          "per_purchase_minor",
+          "approval_threshold_minor",
+          "valid_to",
+          "reason"
+        ]
+      },
+      "ProductionInvitationAccess": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "membership_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "per_purchase_minor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$"
+          },
+          "approval_threshold_minor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}$"
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "membership_id",
+          "tenant_id",
+          "customer_account_id",
+          "per_purchase_minor",
+          "approval_threshold_minor",
+          "valid_to"
+        ]
+      },
+      "ProductionOrderQueueItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "order_id",
+          "purchase_intent_id",
+          "total_minor",
+          "state",
+          "created_at"
+        ],
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purchase_intent_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "total_minor": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "reserved",
+              "fulfilled",
+              "cancelled"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProductionOrderQueue": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "limit",
+          "has_more"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+              "$ref": "#/components/schemas/ProductionOrderQueueItem"
+            }
+          },
+          "limit": {
+            "type": "integer",
+            "const": 50
+          },
+          "has_more": {
+            "type": "boolean"
           }
         }
       }

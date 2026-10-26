@@ -1,0 +1,5 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {merchantBootstrapInput} from '../src/lib/merchant-bootstrap-input.ts';
+const body={slug:'byggbutiken',name:' Byggbutiken ',legal_name:'Byggbutiken AB',organization_number:'556855-4884',reason:'Startar vår egen butik'};
+test('workspace bootstrap normalizes declarations without asserting legal verification',()=>{const r=merchantBootstrapInput.parse({...body,slug:' BYGGBUTIKEN '});assert.equal(r.slug,'byggbutiken');assert.equal(r.name,'Byggbutiken');assert.equal(r.organization_number,'5568554884')});
+test('workspace bootstrap cannot select tenant, role or sales approval',()=>{for(const patch of [{tenant_id:'00000000-0000-4000-8000-000000000001'},{role:'platform_admin'},{sales_paused:false},{mode:'test'},{verified:true},{slug:'api'},{slug:'https://evil.invalid'},{organization_number:'5568554885'},{organization_number:'199901010000'},{reason:'x'}])assert.equal(merchantBootstrapInput.safeParse({...body,...patch}).success,false)});
