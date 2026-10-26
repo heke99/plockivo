@@ -63,3 +63,6 @@ No permanent identity was created. Isolated hosted tests use rollback. Remaining
 
 ## Clean CI follow-up
 Initial code CI: API quality/build/contract PASS and web Verify PASS. API clean schema replay PASS through the first15 migrations, then legacy database.sql fixtures failed because they supplied JWT-only actors. Those fixtures were corrected to verified Auth users with actual matching sessions; no permission checks or negative assertions removed. The ordinary db:test runner now includes the five new session/publication/production/bootstrap/invitation simulations. Final clean CI rerun is tracked on the subsequent fixture checkpoint commit.
+
+## Final CI outcome
+API checkpoint6e9d107bf570e690cd975eee1ea603fead56427e: Actions40397832723 quality PASS and database PASS. Clean local database replay includes all16 new migrations; all22 SQL suites in db:test PASS, including the formerly JWT-only fixtures and all five new suites. Web checkpoint9e92bf2be92e44f2e485437c204ddba6171ab81a: Actions40397838146 quality PASS. Runtime deployments remain the source commits listed above; later checkpoint changes contain only SQL/test/documentation. Final hosted namespace cleanup readback: fixture_users_left0, fixture_merchants_left0. Final documentation commit does not alter runtime code.
