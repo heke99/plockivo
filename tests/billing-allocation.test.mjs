@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {allocateRowMinor} from '../src/lib/billing-allocation.ts';
+test('cumulative allocation preserves original totals across partial rounding',()=>{assert.equal(allocateRowMinor('101','1000000','3000000'),'34');assert.equal(allocateRowMinor('101','2000000','3000000'),'67');assert.equal(allocateRowMinor('101','3000000','3000000'),'101');assert.equal(allocateRowMinor('1','500000','1000000'),'1');assert.equal(allocateRowMinor('999999999999999','0','3000000'),'0')});
+test('allocation rejects invalid quantities and overfulfillment',()=>{for(const q of ['-1','1.5','3000001'])assert.throws(()=>allocateRowMinor('101',q,'3000000'));assert.throws(()=>allocateRowMinor('101','1','0'))});

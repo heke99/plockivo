@@ -3799,6 +3799,145 @@
           }
         }
       }
+    },
+    "/v1/fulfillment/{id}/billing-underlay": {
+      "get": {
+        "operationId": "get_test_billing_underlay",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; inspect business status. Test adapter only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TestBillingUnderlay"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Permission denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Business conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Payload too large",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Quota exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Internal failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "summary": "Read cumulative synthetic billing underlay; never an invoice"
+      }
     }
   },
   "components": {
@@ -5629,6 +5768,96 @@
           "state"
         ],
         "additionalProperties": false
+      },
+      "TestBillingUnderlay": {
+        "type": "object",
+        "required": [
+          "order_id",
+          "tenant_id",
+          "mode",
+          "status",
+          "currency",
+          "allocation_policy",
+          "net_minor",
+          "vat_minor",
+          "total_minor",
+          "returns_create_credit",
+          "lines"
+        ],
+        "properties": {
+          "order_id": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "allocation_policy": {
+            "type": "string"
+          },
+          "net_minor": {
+            "type": "string"
+          },
+          "vat_minor": {
+            "type": "string"
+          },
+          "total_minor": {
+            "type": "string"
+          },
+          "returns_create_credit": {
+            "type": "boolean"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "order_line_id",
+                "product_id",
+                "name",
+                "ordered_quantity",
+                "fulfilled_quantity",
+                "returned_quantity",
+                "net_minor",
+                "vat_minor"
+              ],
+              "properties": {
+                "order_line_id": {
+                  "type": "string"
+                },
+                "product_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "ordered_quantity": {
+                  "type": "string"
+                },
+                "fulfilled_quantity": {
+                  "type": "string"
+                },
+                "returned_quantity": {
+                  "type": "string"
+                },
+                "net_minor": {
+                  "type": "string"
+                },
+                "vat_minor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

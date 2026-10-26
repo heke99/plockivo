@@ -17,6 +17,7 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
  if(path[0]==='fulfillment'&&path[2]==='cancel'&&process.env.TEST_CANCELLATION_ENABLED!=='true')return failure('INTEGRATION_NOT_READY',correlation,503);
  if(path[0]==='fulfillment'&&process.env.TEST_FULFILLMENT_ENABLED!=='true')return Response.json({error:{code:'INTEGRATION_NOT_READY',message:'Testutlämning är inte aktiverad.'}},{status:503,headers:{'Cache-Control':'no-store'}});
  if(path[0]==='merchant-members'&&process.env.MERCHANT_MEMBER_ADMIN_ENABLED!=='true')return Response.json({error:{code:'INTEGRATION_NOT_READY',message:'Mandathanteringen är inte aktiverad ännu.'}},{status:503,headers:{'Cache-Control':'no-store'}});
+ if(path[0]==='fulfillment'&&path[2]==='billing-underlay'&&process.env.TEST_BILLING_UNDERLAY_ENABLED!=='true')return failure('INTEGRATION_NOT_READY',correlation,503);
  if(req.method==='GET'&&path.join('/')==='health')return Response.json({service:'plockivo-api',version:'0.2.0',contract:'0.2.0'},{headers:{'Cache-Control':'no-store'}});
  const token=req.headers.get('authorization')?.match(/^Bearer ([^\s]+)$/)?.[1];
  if(!token)return failure('AUTH_REQUIRED',correlation,401);
@@ -27,7 +28,8 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
   if(limited.error)throw limited.error;
   if(!limited.data)return failure('RATE_LIMITED',correlation,429);
   let result;let invitationToken:string|undefined;
-  if(req.method==='GET'&&path[0]==='fulfillment'&&path.length===2){result=await db.rpc('get_test_fulfillment',{p_order:idInput.parse(path[1])});
+  if(req.method==='GET'&&path[0]==='fulfillment'&&path.length===3&&path[2]==='billing-underlay'){result=await db.rpc('get_test_billing_underlay',{p_order:idInput.parse(path[1])});
+  } else if(req.method==='GET'&&path[0]==='fulfillment'&&path.length===2){result=await db.rpc('get_test_fulfillment',{p_order:idInput.parse(path[1])});
   } else if(req.method==='GET'&&path.join('/')==='merchant-jobs'){result=await db.rpc('list_merchant_jobs',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path.join('/')==='merchant-members'){result=await db.rpc('list_merchant_members',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
   } else if(req.method==='GET'&&path.join('/')==='merchant-domains'){result=await db.rpc('list_merchant_domains',{p_tenant:idInput.parse(new URL(req.url).searchParams.get('tenant_id'))});
