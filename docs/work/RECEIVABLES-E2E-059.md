@@ -21,7 +21,7 @@ Only a current live verified full merchant administrator with AAL2 can record/re
 | REC-007 | Immutable ledger, exact aggregate and cleanup assertions | PASS |30 cleanup categories all0 |
 | REC-008 | Real Chromium153 rendered UI,390/768/1440 | PASS UI-ONLY |Auth/BFF intercepted; administration/fulfillment/JSON export/partial payment/reversal/cancellation, no pageerrors/overflow |
 | REC-009 | Failed refresh freezes writes and preserves form draft | PASS UI-ONLY |same browser scenario, no POST until successful explicit readback |
-| REC-010 | Real local Auth/TOTP→HTTP→API→PostgREST→DB, competing payments and closed-session denial | PENDING CI |tests/http-production.mjs, disposable loopback Supabase only |
+| REC-010 | Real local Auth/TOTP→HTTP→API→PostgREST→DB, competing payments and closed-session denial | PASS CI |tests/http-production.mjs, disposable loopback Supabase only |
 | REC-011 | Hosted Strato SMTP and authenticated full browser/device journey | NOT RUN |requires actual personal verified user session and delivery test |
 
 ## P0 accounting evidence
@@ -35,3 +35,16 @@ Hosted tests use namespace54000000 and rollback. Local HTTP test refuses without
 
 ## Remaining limitations
 No external bank integration, automated reconciliation, production credit-note/return flow or full invoice issuance is included. Latest100 receipts are listed, with explicit truncation and known-ID correction support. Browser UI proof uses mocked API responses; the real local HTTP integration is a separate boundary. Neither proves actual production SMTP delivery or a real phone camera. Full release remains RED until the untested P0 external/browser flow is completed.
+
+## Actual CI outcome
+API726a9dd3a263630175d980973ac63fcb13651a9f / Actions40401350268: quality PASS, clean database replay and all23 SQL suites PASS, actual Auth/TOTP/HTTP production flow PASS, disposable stack teardown PASS. HTTP check covers two concurrent same-key requests causing one payment effect, two competing full-balance requests producing one success and one version conflict, and a still-signed JWT denied by direct RPC after real Auth signout. Exact final DB exposure10000, project committed30863, stock8/reserved0 and one original order/reservation. Web8eca16a5f548f2c1d60ab8c58444e960544e0fe0 / Actions40401356778: quality PASS. Production deployment identities and public live-readback follow below.
+
+## Deploy Result
+- API production: dpl_5e3Gr1bfcKjN9t66qkP6eA1DHnAo, commit726a9dd3a263630175d980973ac63fcb13651a9f, READY.
+- Web production: https://www.plockivo.com, dpl_3PBkFvbBAnTdBWeAqpSzBMiFfXFC, commit8eca16a5f548f2c1d60ab8c58444e960544e0fe0, READY.
+- Framework: Next.js16.4.2; separate API/web repositories and projects.
+
+### Post-Deploy Observability
+Grouped error/fatal runtime-log queries for each new deployment returned no groups in the initial15-minute window. This short empty window is not proof of an exercised production business journey. Cloud browser verified the published integration overview version3 contains manual receivables, and navigation to /app renders the normal logged-out workspace at1363px without horizontal overflow. No production credentials entered. Monitoring/drain configuration was not changed or asserted. Final hosted namespace readback users0/merchants0/paymentreceipts0.
+
+Documentation checkpoint only follows the tested/deployed runtime commits. Remaining unrestricted-release verdict stays RED solely where critical actual external/device/user-session verification is still not run; the new manual accounting subsystem has the SQL, local-HTTP and UI-only evidence above.
