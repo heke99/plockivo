@@ -50,3 +50,7 @@ EMAIL-014: avsändarvalidering och mailmallar testade; verklig e-postaktivering 
 ## Godkänt MEMBERS-015 och READINESS-018 — 2026-10-26
 
 Exakt mandatmigration godkänd av användaren, tillämpad som20261025231731_member_administration och rolltestad PASS (scope/self/admin/version/replay/audit/omedelbar åtkomstförlust). Vercel API production MERCHANT_MEMBER_ADMIN_ENABLED=true inför nästa deployment. READINESS-018 informativ versionsstyrd integrationsinventering implementerad, länk från hjälp. API verify/build PASS, webb verify26 tester/build och browser mobil/dator PASS. Inga verkliga integrationsförmågor aktiveras av inventeringen. E-post kräver fortfarande verifierad avsändare/SMTP.
+
+## Fyra teststeg 019–022 — 2026-10-26
+
+Varukontroll och beständigt claim/confirm samt returmottagning implementerade med SQL-mode=test spärr, aktuellt MFA och separata permissions. Core04427/returns04455 tillämpade, riktiga SQL-rolltester PASS med rollback. Annullering förberedd i pending04633, hosted apply auto-review avvisad; ingen SQL-PASS, TEST_CANCELLATION_ENABLED=false. TEST_FULFILLMENT_ENABLED=true konfigurerad för nästa API deployment endast för syntetiska testorder. Inga fysiska eller ekonomiska effekter öppnade. API verify20 tester/build PASS, webb verify28/build PASS. UI-only Chromium fyra flöden+gated503/mobil PASS, separat SQL auth-bevis. Ingen verklig samtidig sessionskörning; måste verifieras före pilot. Ingen automatisk frigöring av oklara claims, ingen retur→kredit.

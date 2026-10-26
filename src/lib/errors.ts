@@ -6,6 +6,7 @@ export const messages: Record<string,string> = {
   APPROVAL_REQUIRED:'Köpet kräver attest innan du kan bekräfta.', PRICE_CHANGED:'Prisunderlaget har ändrats eller gått ut. Förbered köpet igen.',
   SALES_PAUSED:'Nya köp är pausade.', INTEGRATION_NOT_READY:'Handlarens verkliga integration är ännu inte aktiverad.',
   BUDGET_EXCEEDED:'Köpet överskrider ditt mandat eller projektets budget.', INTERNAL_ERROR:'Ett tekniskt fel uppstod. Kontrollera köpets status innan ett nytt försök.',
+  QUANTITY_CONFLICT:'Mängden är redan disponerad. Hämta aktuellt underlag.', INSPECTION_REQUIRED:'Kontrollera samma rader och mottagare före testanspråket.', RETURN_QUANTITY_EXCEEDED:'Returmängden överstiger bekräftat utlämnad mängd.',
   RATE_LIMITED:'För många anrop. Försök igen om en stund.',
 };
 export function failure(code: string, correlationId: string, status = 400) {

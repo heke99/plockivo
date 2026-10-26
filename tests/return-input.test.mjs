@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {returnInput} from '../src/lib/return-input.ts';
+const body={version:0,claim_id:'00000000-0000-4000-8000-000000000001',order_line_id:'00000000-0000-4000-8000-000000000002',quantity:'1.5',condition:'opened',reason:'Fel mängd inköpt'};
+test('physical return input binds source claim and row without financial instruction',()=>{assert.ok(returnInput.safeParse(body).success);for(const extra of [{actor_id:body.claim_id},{tenant_id:body.claim_id},{credit:true},{status:'approved'}])assert.equal(returnInput.safeParse({...body,...extra}).success,false)});
+test('physical return rejects imprecise or invalid quantities and missing source context',()=>{for(const patch of [{quantity:'0'},{quantity:'-1'},{quantity:'1e3'},{quantity:'0.0000001'},{quantity:'NaN'},{claim_id:'other'},{condition:'restock'},{reason:''},{version:-1}])assert.equal(returnInput.safeParse({...body,...patch}).success,false)});

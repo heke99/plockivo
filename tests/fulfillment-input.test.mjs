@@ -1,0 +1,4 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {inspectionInput,claimInput} from '../src/lib/fulfillment-input.ts';
+const lines=[{product_id:'00000000-0000-4000-8000-000000000006',quantity:'1'}];
+test('test fulfillment rejects duplicate, imprecise and injected quantity/actor',()=>{const b={version:0,recipient_reference:'test',lines};assert(claimInput.safeParse(b).success);for(const extra of [{lines:[...lines,...lines]},{lines:[{...lines[0],quantity:'0'}]},{lines:[{...lines[0],quantity:'1.1234567'}]},{actor_id:lines[0].product_id}])assert.equal(claimInput.safeParse({...b,...extra}).success,false)});
+test('inspection requires explicit bounded result and recipient',()=>{assert(inspectionInput.safeParse({version:0,recipient_reference:'test',lines,result:'passed',reason:'checked'}).success);assert.equal(inspectionInput.safeParse({version:0,recipient_reference:'',lines,result:'passed',reason:'checked'}).success,false)});
