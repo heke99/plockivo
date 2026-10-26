@@ -1,7 +1,9 @@
 begin;
 -- Synthetic fixtures, isolated UUID namespace. Never real business data.
 
-insert into auth.users(id,email) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid'),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid'),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid');
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid',now());
+-- Verified personal Auth sessions for legitimate actors; negative MFA/session probes below stay intact.
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values ('00000000-0000-4000-8000-000000000105','00000000-0000-4000-8000-000000000005','aal1',now(),now()),('00000000-0000-4000-8000-000000000107','00000000-0000-4000-8000-000000000007','aal1',now(),now()),('00000000-0000-4000-8000-000000000111','00000000-0000-4000-8000-000000000011','aal1',now(),now());
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('00000000-0000-4000-8000-000000000001','e2e-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('00000000-0000-4000-8000-000000000008','e2e-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -18,7 +20,7 @@ insert into private.test_prices values('00000000-0000-4000-8000-000000000001','0
 update public.merchants set profile='{"display_name":"Nord butik","primary_color":"#123456","logo_data_url":null,"secret":"not-for-browser"}' where id='00000000-0000-4000-8000-000000000001';
 update public.merchants set profile='{"display_name":"Syd hemlig","primary_color":"invalid","logo_data_url":"https://evil.invalid/image"}' where id='00000000-0000-4000-8000-000000000008';
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","aal":"aal1"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000105"}',true);
 do $$declare c jsonb:=public.get_context();b jsonb;begin
  assert jsonb_array_length(c->'memberships')=1;
  b:=c->'memberships'->0->'branding';assert b->>'display_name'='Nord butik';assert b->>'primary_color'='#123456';assert b->>'logo_data_url' is null;assert not b ? 'secret';assert c::text not like '%Syd hemlig%';
@@ -27,7 +29,7 @@ reset role;
 update public.memberships set status='revoked' where user_id='00000000-0000-4000-8000-000000000005';
 set local role authenticated;
 do $$begin assert public.get_context()->'memberships'='[]'::jsonb;end$$;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","aal":"aal1"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000111"}',true);
 do $$declare c jsonb:=public.get_context();b jsonb;begin
  b:=c->'memberships'->0->'branding';assert b->>'display_name'='Syd hemlig';assert b->>'primary_color'='#244e3c';assert b->>'logo_data_url' is null;assert c::text not like '%Nord butik%';
 end$$;

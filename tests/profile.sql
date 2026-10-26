@@ -1,7 +1,9 @@
 begin;
 -- Synthetic fixtures, isolated UUID namespace. Never real business data.
 
-insert into auth.users(id,email) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid'),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid'),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid');
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid',now());
+-- Verified personal Auth sessions for legitimate actors; negative MFA/session probes below stay intact.
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values ('00000000-0000-4000-8000-000000000105','00000000-0000-4000-8000-000000000005','aal1',now(),now()),('00000000-0000-4000-8000-000000000107','00000000-0000-4000-8000-000000000007','aal1',now(),now()),('00000000-0000-4000-8000-000000000111','00000000-0000-4000-8000-000000000011','aal1',now(),now());
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('00000000-0000-4000-8000-000000000001','e2e-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('00000000-0000-4000-8000-000000000008','e2e-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -30,7 +32,7 @@ end$$;
 reset role;
 do $$begin assert (select count(*) from private.audit_events where operation='merchant.profile')=1;end$$;
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","aal":"aal1"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000111"}',true);
 do $$begin
  begin perform public.get_merchant_profile('00000000-0000-4000-8000-000000000008');raise exception 'buyer allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
 end$$;

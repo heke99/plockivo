@@ -1,7 +1,9 @@
 begin;
 -- Synthetic fixtures, isolated UUID namespace. Never real business data.
 
-insert into auth.users(id,email) values ('70000000-0000-4000-8000-000000000005','e2e-buyer-docs@plockivo.invalid'),('70000000-0000-4000-8000-000000000007','e2e-approver-docs@plockivo.invalid'),('70000000-0000-4000-8000-000000000011','e2e-other-docs@plockivo.invalid');
+insert into auth.users(id,email,email_confirmed_at) values ('70000000-0000-4000-8000-000000000005','e2e-buyer-docs@plockivo.invalid',now()),('70000000-0000-4000-8000-000000000007','e2e-approver-docs@plockivo.invalid',now()),('70000000-0000-4000-8000-000000000011','e2e-other-docs@plockivo.invalid',now());
+-- Verified personal Auth sessions for legitimate actors; negative MFA/session probes below stay intact.
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values ('70000000-0000-4000-8000-000000000105','70000000-0000-4000-8000-000000000005','aal1',now(),now()),('70000000-0000-4000-8000-000000000107','70000000-0000-4000-8000-000000000007','aal1',now(),now()),('70000000-0000-4000-8000-000000000111','70000000-0000-4000-8000-000000000011','aal1',now(),now());
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('70000000-0000-4000-8000-000000000001','e2e-doc-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('70000000-0000-4000-8000-000000000008','e2e-doc-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -16,7 +18,7 @@ insert into private.test_prices values('70000000-0000-4000-8000-000000000001','7
 
 
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"70000000-0000-4000-8000-000000000105","aal":"aal1"}',true);
 do $$declare i jsonb;o jsonb;c jsonb;begin
  i:=public.prepare_purchase('{"tenant_id":"70000000-0000-4000-8000-000000000001","customer_account_id":"70000000-0000-4000-8000-000000000002","store_id":"70000000-0000-4000-8000-000000000003","project_id":"70000000-0000-4000-8000-000000000004","reference":"DOCS-013 TEST","lines":[{"product_id":"70000000-0000-4000-8000-000000000006","quantity":"2"}]}','docs-prepare-00001',gen_random_uuid());
  o:=public.confirm_purchase((i->>'id')::uuid,jsonb_build_object('version',1,'quote_hash',i->>'quote_hash'),'docs-confirm-00001',gen_random_uuid());
@@ -34,7 +36,7 @@ do $$declare j jsonb;begin
 end$$;
 reset role;
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"70000000-0000-4000-8000-000000000105","aal":"aal1"}',true);
 do $$declare c jsonb;begin
  c:=public.get_order_confirmation(current_setting('test.docs.intent')::uuid);
  assert c->>'status'='ready','ready after worker';
@@ -44,7 +46,7 @@ do $$declare c jsonb;begin
  assert c=public.get_order_confirmation(current_setting('test.docs.intent')::uuid),'read replay no side effects';
  assert (select count(*) from public.documents)=1,'one visible document';
 end$$;
-select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000011","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000011","role":"authenticated","session_id":"70000000-0000-4000-8000-000000000111","aal":"aal1"}',true);
 do $$begin
  begin perform public.get_order_confirmation(current_setting('test.docs.intent')::uuid);raise exception 'cross tenant visible';exception when raise_exception then if sqlerrm<>'NOT_FOUND' then raise;end if;end;
  assert (select count(*) from public.documents)=0,'cross tenant document RLS';
@@ -52,7 +54,7 @@ end$$;
 reset role;
 update public.memberships set status='revoked' where user_id='70000000-0000-4000-8000-000000000005';
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"70000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"70000000-0000-4000-8000-000000000105","aal":"aal1"}',true);
 do $$begin
  begin perform public.get_order_confirmation(current_setting('test.docs.intent')::uuid);raise exception 'revoked visible';exception when raise_exception then if sqlerrm<>'NOT_FOUND' then raise;end if;end;
  assert (select count(*) from public.documents)=0,'revoked document RLS';

@@ -2,6 +2,11 @@ begin;
 -- Synthetic fixtures, isolated UUID namespace. Never real business data.
 
 insert into auth.users(id,email) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid'),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid'),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid');
+-- Verified synthetic identities and matching live sessions: authorization uses real Auth state.
+update auth.users set email_confirmed_at=now() where id in ('00000000-0000-4000-8000-000000000005','00000000-0000-4000-8000-000000000007','00000000-0000-4000-8000-000000000011');
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values
+('00000000-0000-4000-8000-000000000069','00000000-0000-4000-8000-000000000005','aal1',now(),now()),('00000000-0000-4000-8000-00000000006b','00000000-0000-4000-8000-000000000007','aal1',now(),now()),('00000000-0000-4000-8000-000000000075','00000000-0000-4000-8000-000000000011','aal1',now(),now());
+
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('00000000-0000-4000-8000-000000000001','e2e-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('00000000-0000-4000-8000-000000000008','e2e-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -39,7 +44,7 @@ do $$begin
  assert (select count(*) from public.memberships)=4;
 end$$;
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","aal":"aal1"}',true);
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","aal":"aal1","session_id":"00000000-0000-4000-8000-000000000075"}',true);
 do $$begin begin perform public.list_merchant_customers('00000000-0000-4000-8000-000000000001');raise exception 'buyer admin';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;end$$;
 reset role;
 set local role anon;

@@ -1,6 +1,8 @@
 begin;
 
-insert into auth.users(id,email) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid'),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid'),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid');
+insert into auth.users(id,email,email_confirmed_at) values ('00000000-0000-4000-8000-000000000005','e2e-buyer@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000007','e2e-approver@plockivo.invalid',now()),('00000000-0000-4000-8000-000000000011','e2e-other@plockivo.invalid',now());
+-- Verified personal Auth sessions for legitimate actors; negative MFA/session probes below stay intact.
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values ('00000000-0000-4000-8000-000000000105','00000000-0000-4000-8000-000000000005','aal1',now(),now()),('00000000-0000-4000-8000-000000000107','00000000-0000-4000-8000-000000000007','aal1',now(),now()),('00000000-0000-4000-8000-000000000111','00000000-0000-4000-8000-000000000011','aal1',now(),now());
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('00000000-0000-4000-8000-000000000001','e2e-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('00000000-0000-4000-8000-000000000008','e2e-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -14,7 +16,7 @@ insert into public.products(id,tenant_id,sku,name,unit,quantity_step,self_scan) 
 insert into public.product_barcodes values('00000000-0000-4000-8000-000000000001','7350000000001','00000000-0000-4000-8000-000000000006',10);
 insert into private.test_prices values('00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000006',10000,2500,1);
 
-set local role authenticated;select set_config('request.jwt.claims','{"sub": "00000000-0000-4000-8000-000000000005", "role": "authenticated"}',true);
+set local role authenticated;select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"00000000-0000-4000-8000-000000000105","aal":"aal1"}',true);
 
 do $$declare i jsonb;o jsonb;again jsonb;b jsonb:='{"tenant_id": "00000000-0000-4000-8000-000000000001", "customer_account_id": "00000000-0000-4000-8000-000000000002", "store_id": "00000000-0000-4000-8000-000000000003", "project_id": "00000000-0000-4000-8000-000000000004", "reference": "E2E-BOOTSTRAP", "lines": [{"product_id": "00000000-0000-4000-8000-000000000006", "quantity": "2"}]}';begin
  assert jsonb_array_length(public.get_context()->'memberships')=2,'context membership';
@@ -33,9 +35,9 @@ do $$declare i jsonb;o jsonb;again jsonb;b jsonb:='{"tenant_id": "00000000-0000-
  begin perform public.confirm_purchase((i->>'id')::uuid,'{"version":1}','confirm-missing01',gen_random_uuid());raise exception 'expected hash';exception when raise_exception then if sqlerrm<>'PRICE_CHANGED' then raise;end if;end;
  begin perform public.confirm_purchase((i->>'id')::uuid,jsonb_build_object('version',1,'quote_hash',i->>'quote_hash'),'approval-required01',gen_random_uuid());raise exception 'expected approval';exception when raise_exception then if sqlerrm<>'APPROVAL_REQUIRED' then raise;end if;end;
  begin perform public.decide_approval((i->>'id')::uuid,'{"version":1,"decision":"approved"}','approval-self0001',gen_random_uuid());raise exception 'self approved';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
- perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000007","role":"authenticated"}',true);
+ perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000007","role":"authenticated","session_id":"00000000-0000-4000-8000-000000000107","aal":"aal1"}',true);
  perform public.decide_approval((i->>'id')::uuid,'{"version":1,"decision":"approved"}','approval-valid001',gen_random_uuid());
- perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+ perform set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"00000000-0000-4000-8000-000000000105","aal":"aal1"}',true);
  o:=public.confirm_purchase((i->>'id')::uuid,jsonb_build_object('version',1,'quote_hash',i->>'quote_hash'),'confirm-000000001',gen_random_uuid());
  again:=public.confirm_purchase((i->>'id')::uuid,jsonb_build_object('version',1,'quote_hash',i->>'quote_hash'),'confirm-000000002',gen_random_uuid());
  assert o->>'id'=again->>'id','one intent one order';
@@ -50,14 +52,14 @@ do $$begin
  assert (select count(*) from private.outbox where tenant_id='00000000-0000-4000-8000-000000000001')=2,'durable jobs';
  assert (select count(*) from private.audit_events where tenant_id='00000000-0000-4000-8000-000000000001' and operation='purchases.confirm')=1,'audit once';
 end$$;
-set local role authenticated;select set_config('request.jwt.claims','{"sub": "00000000-0000-4000-8000-000000000011", "role": "authenticated"}',true);
+set local role authenticated;select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000011","role":"authenticated","session_id":"00000000-0000-4000-8000-000000000111","aal":"aal1"}',true);
 do $$begin
  assert (select count(*) from public.orders)=0,'cross tenant orders';
  assert public.get_purchase_intent(current_setting('test.intent')::uuid) is null,'cross tenant intent';
 end$$;
 reset role;
 update public.memberships set status='suspended' where user_id='00000000-0000-4000-8000-000000000005';
-set local role authenticated;select set_config('request.jwt.claims','{"sub": "00000000-0000-4000-8000-000000000005", "role": "authenticated"}',true);
+set local role authenticated;select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"00000000-0000-4000-8000-000000000105","aal":"aal1"}',true);
 do $$begin
  assert (select count(*) from public.orders)=0,'revoked historical access';
  begin perform public.prepare_purchase('{"tenant_id": "00000000-0000-4000-8000-000000000001", "customer_account_id": "00000000-0000-4000-8000-000000000002", "store_id": "00000000-0000-4000-8000-000000000003", "project_id": "00000000-0000-4000-8000-000000000004", "reference": "E2E-BOOTSTRAP", "lines": [{"product_id": "00000000-0000-4000-8000-000000000006", "quantity": "2"}]}','prepare-suspend01',gen_random_uuid());raise exception 'suspended allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
@@ -78,3 +80,4 @@ do $$begin
 end$$;
 select 'PASS: role isolation, scoped context, exact prices, version/hash checks, idempotency, reservation, revocation, document job and worker replay' as result;
 rollback;
+

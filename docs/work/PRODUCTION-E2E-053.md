@@ -6,13 +6,13 @@ RED for an unrestricted, fully verified production release. The standalone datab
 
 ## Execution identity
 
-Repositories: heke99/plockivo and heke99/plockivo-web, main. Environment: local code checks plus hosted Supabase cqznytuyutrqenbbyczc. Production website: www.plockivo.com. Exact source commits and deployment IDs are recorded after publication below.
+Repositories: heke99/plockivo and heke99/plockivo-web, main. Environment: local code checks plus hosted Supabase cqznytuyutrqenbbyczc. Production website: www.plockivo.com. API source8f9dc9f58ef40f2e1d16acc7415c53cf3ffba3f2; Vercel dpl_75Ji5WnYMxkKEcFxXKhfY8ZJY2c7 READY. Web sourcee5e9a33563459a08f8e4e0563583800ce162bf35; Vercel dpl_7t3Cp1CwjeAUDLQq5fsikg8KUfWw READY. Subsequent API checkpoint changes are SQL migration/test/documentation only.
 
 ## Implemented behavior
 
 Explicit production configuration; customer-specific catalog publication and prices; absolute inventory adjustments; stores/projects; atomic credit/project/stock reservations; separate approval; purchase confirmation; full-order fulfillment or cancellation before fulfillment; immutable billing snapshot for manual JSON/CSV export. Personal registration checks current provider email-confirmation policy. Verified people with current MFA can bootstrap an isolated merchant; explicit scoped delegation permits customer invitations. Staff queue is scoped and bounded to latest50 with has_more.
 
-Production source selection searches the whole preparation register with 50-row pages and preserves the selected source version. Preparation edits do not automatically change published prices or unpublish a product. Product unit/quantity_step cannot be reinterpreted after mapping.
+Production source selection searches the whole preparation register with 50-row pages and preserves the selected source version. Other setup selectors/readbacks are bounded to200 accounts/stores/projects/products/prices/stock rows with explicit truncated flags; this is not an unlimited back-office listing. The API mutations operate on explicit validated IDs. Preparation edits do not automatically change published prices or unpublish a product. Product unit/quantity_step cannot be reinterpreted after mapping.
 
 ## Quality gates
 
@@ -22,11 +22,11 @@ Production source selection searches the whole preparation register with 50-row 
 | Web standard/typecheck/unit | PASS | 58 tests, contract lock |
 | Web production build | PASS | next build --webpack; local Turbopack persistence database failed independently of code |
 | Contract generation/copy | PASS | generated API/web types equal; SHA-256 locked |
-| Hosted migration installation | PASS | 15 migrations after customer_policy; staged foundation and protective live-session prerequisite |
+| Hosted migration installation | PASS | 16 migrations after customer_policy; staged foundation and protective live-session prerequisite |
 | Hosted production business simulation | PASS | tests/production-flow-simulation.sql; real authenticated roles, rollback, 26 cleanup zeros |
 | Hosted merchant bootstrap | PASS | tests/merchant-bootstrap.sql |
 | Hosted invitation setup | PASS | tests/customer-invitation-setup.sql |
-| Hosted synthetic checkout regression | PASS | tests/catalog-test-purchase.sql; 20 cleanup zeros |
+| Hosted synthetic checkout/cart regression | PASS | tests/catalog-test-purchase.sql 20 cleanup zeros; tests/carts.sql and independent cleanup zero |
 | Hosted session boundary regression | PASS | tests/live-session-authorization.sql, users_left0/merchants_left0 |
 | Security advisor | PASS with INFO | 37 RLS/no-policy informational findings, intentionally no direct table access; no warning/error finding |
 | Authenticated browser flow/mobile | NOT RUN | no authenticated test identity; local Chromium missing |
@@ -51,12 +51,15 @@ PROD001–004: authenticated buyer creates a real production quote with separate
 
 ## Failure and remediation
 
-Automatic review rejected the initial foundation installation while a known direct-RPC live-session gap existed. Fixed centrally: private.live_person now checks banned_until; private.allowed requires a verified existing non-expired Auth session before existing MFA and mandate checks. Regression under real authenticated role passes, including existing prepare_purchase rejecting expired session. The protective migration was installed and tested before financial authority migration retry. Several connector calls returned Invalid or expired requestState; authoritative migration readback was checked, and the foundation was installed in smaller stages with all new helpers revoked before commit and public entrypoints granted last. No rejected action was bypassed.
+Automatic review rejected the initial foundation installation while a known direct-RPC live-session gap existed. Fixed centrally: private.live_person now checks banned_until; private.allowed requires a verified existing non-expired Auth session before existing MFA and mandate checks. Regression under real authenticated role passes, including existing prepare_purchase rejecting expired session. The protective migration was installed and tested before financial authority migration retry. A final protective migration also makes private.mfa_satisfied require live_person, covering reads which rely on MFA checks directly. Session and full production simulations reran PASS after that final change. Several connector calls returned Invalid or expired requestState; authoritative migration readback was checked, and the foundation was installed in smaller stages with all new helpers revoked before commit and public entrypoints granted last. No rejected action was bypassed.
 
 ## External integrations and limitations
 
-Manual credit decisions and manual accounting export are the selected standalone authorities. No external invoice, accounting entry, email delivery, ERP synchronization or Creditsafe result is claimed. Fulfillment is full-order only; no production partial fulfillment or return implementation is asserted. No live external side effects were generated by simulations. No saved template or unit test is treated as proof that an email reached its recipient.
+Manual credit decisions and manual accounting export are the selected standalone authorities. No external invoice, accounting entry, email delivery, ERP synchronization or Creditsafe result is claimed. Manual export does not reconcile incoming payments or release exposure for paid fulfilled orders; a payment/receivables reconciliation workflow is outside this completed checkout-to-export flow. Fulfillment is full-order only; no production partial fulfillment or return implementation is asserted. No live external side effects were generated by simulations. No saved template or unit test is treated as proof that an email reached its recipient.
 
 ## Cleanup and remaining blockers
 
-No permanent identity was created. Isolated hosted tests use rollback. Remaining P0 evidence requires an actual verified user session and a real email delivery test. Public live-page checks and deployment readback are recorded after publication; these do not substitute for authenticated checkout or physical device/camera verification.
+No permanent identity was created. Isolated hosted tests use rollback. Remaining P0 evidence requires an actual verified user session and a real email delivery test. Live cloud-browser checks PASS for www.plockivo.com/register, homepage → /start navigation, logged-out start view, registration screenshot and1363px viewport without horizontal overflow. No application-origin console error observed (extension metadata errors excluded). These checks do not substitute for authenticated checkout, mobile viewport or physical device/camera verification.
+
+## Clean CI follow-up
+Initial code CI: API quality/build/contract PASS and web Verify PASS. API clean schema replay PASS through the first15 migrations, then legacy database.sql fixtures failed because they supplied JWT-only actors. Those fixtures were corrected to verified Auth users with actual matching sessions; no permission checks or negative assertions removed. The ordinary db:test runner now includes the five new session/publication/production/bootstrap/invitation simulations. Final clean CI rerun is tracked on the subsequent fixture checkpoint commit.

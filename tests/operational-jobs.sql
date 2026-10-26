@@ -2,6 +2,11 @@ begin;
 -- Synthetic fixtures, isolated UUID namespace. Never real business data.
 
 insert into auth.users(id,email) values ('81000000-0000-4000-8000-000000000005','e2e-buyer-jobs@plockivo.invalid'),('81000000-0000-4000-8000-000000000007','e2e-approver-jobs@plockivo.invalid'),('81000000-0000-4000-8000-000000000011','e2e-other-jobs@plockivo.invalid');
+-- Verified synthetic identities and matching live sessions: authorization uses real Auth state.
+update auth.users set email_confirmed_at=now() where id in ('81000000-0000-4000-8000-000000000005','81000000-0000-4000-8000-000000000007','81000000-0000-4000-8000-000000000011');
+insert into auth.sessions(id,user_id,aal,created_at,updated_at) values
+('81000000-0000-4000-8000-000000000069','81000000-0000-4000-8000-000000000005','aal1',now(),now()),('81000000-0000-4000-8000-00000000006b','81000000-0000-4000-8000-000000000007','aal1',now(),now()),('81000000-0000-4000-8000-000000000075','81000000-0000-4000-8000-000000000011','aal1',now(),now());
+
 insert into public.merchants(id,slug,name,legal_name,organization_number,sales_paused) values
 ('81000000-0000-4000-8000-000000000001','e2e-jobs-nord','E2E Nord Test','E2E Nord Test AB','TEST-ONLY',false),('81000000-0000-4000-8000-000000000008','e2e-jobs-syd','E2E Syd Test','E2E Syd Test AB','TEST-ONLY',false);
 insert into public.customer_accounts(id,tenant_id,name,organization_number,status,terms_version,credit_limit_minor,purchase_blocked) values
@@ -16,7 +21,7 @@ insert into private.test_prices values('81000000-0000-4000-8000-000000000001','8
 
 
 set local role authenticated;
-select set_config('request.jwt.claims','{"sub":"81000000-0000-4000-8000-000000000005","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"81000000-0000-4000-8000-000000000005","role":"authenticated","session_id":"81000000-0000-4000-8000-000000000069","aal":"aal1"}',true);
 do $$declare i jsonb;o jsonb;c jsonb;begin
  i:=public.prepare_purchase('{"tenant_id":"81000000-0000-4000-8000-000000000001","customer_account_id":"81000000-0000-4000-8000-000000000002","store_id":"81000000-0000-4000-8000-000000000003","project_id":"81000000-0000-4000-8000-000000000004","reference":"DOCS-013 TEST","lines":[{"product_id":"81000000-0000-4000-8000-000000000006","quantity":"2"}]}','docs-prepare-00001',gen_random_uuid());
  o:=public.confirm_purchase((i->>'id')::uuid,jsonb_build_object('version',1,'quote_hash',i->>'quote_hash'),'docs-confirm-00001',gen_random_uuid());
@@ -45,7 +50,7 @@ do $$declare j jsonb;begin
  j:=public.list_merchant_jobs('81000000-0000-4000-8000-000000000001');
  assert exists(select 1 from jsonb_array_elements(j->'jobs') x where x->>'action'='delivery_not_configured');
 end$$;
-select set_config('request.jwt.claims','{"sub":"81000000-0000-4000-8000-000000000011","role":"authenticated"}',true);
+select set_config('request.jwt.claims','{"sub":"81000000-0000-4000-8000-000000000011","role":"authenticated","session_id":"81000000-0000-4000-8000-000000000075","aal":"aal1"}',true);
 do $$begin
  begin perform public.list_merchant_jobs('81000000-0000-4000-8000-000000000008');raise exception 'buyer allowed';exception when raise_exception then if sqlerrm<>'PERMISSION_DENIED' then raise;end if;end;
 end$$;
