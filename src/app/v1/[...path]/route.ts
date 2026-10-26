@@ -1,3 +1,4 @@
+import {testPublicationInput} from '@/lib/test-publication-input';
 import {catalogPageInput} from '@/lib/catalog-page-input';
 import {runCatalogBatch} from '@/lib/catalog-batch';
 import {customerCreateInput} from '@/lib/customer-input';
@@ -19,6 +20,7 @@ export const dynamic='force-dynamic';
 async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
  const correlation=randomUUID();
  const {path}=await ctx.params;
+ if(path[0]==='standalone-catalog'&&path[2]==='test-publication'&&process.env.CATALOG_TEST_PUBLICATION_ENABLED!=='true')return failure('INTEGRATION_NOT_READY',correlation,503);
  if(path[0]==='merchant-customers'&&process.env.STANDALONE_CUSTOMERS_ENABLED!=='true')return failure('INTEGRATION_NOT_READY',correlation,503);
  if(path[0]==='standalone-catalog'&&process.env.STANDALONE_CATALOG_ADMIN_ENABLED!=='true')return failure('INTEGRATION_NOT_READY',correlation,503);
  if(path[0]==='fulfillment'&&path[2]==='cancel'&&process.env.TEST_CANCELLATION_ENABLED!=='true')return failure('INTEGRATION_NOT_READY',correlation,503);
@@ -60,7 +62,8 @@ async function handle(req:Request,ctx:{params:Promise<{path:string[]}>}) {
    const raw=await req.text();if(Buffer.byteLength(raw)>32768)return failure('VALIDATION_ERROR',correlation,413);
    const body=JSON.parse(raw);
    const key=keyInput.parse(req.headers.get('idempotency-key'));
-   if(path.join('/')==='standalone-catalog/import'){
+   if(path[0]==='standalone-catalog'&&path.length===3&&path[2]==='test-publication'){const input=testPublicationInput.parse(body);result=await db.rpc('publish_catalog_test',{p_tenant:input.tenant_id,p_item:idInput.parse(path[1]),p_version:input.version,p_account:input.customer_account_id,p_key:key,p_correlation:correlation});
+   } else if(path.join('/')==='standalone-catalog/import'){
     const batch=await runCatalogBatch(body,key,async (input,rowKey)=>{
      const quota=await db.rpc('consume_api_quota');if(quota.error)return {data:null,error:quota.error};if(!quota.data)return {data:null,error:{message:'RATE_LIMITED'}};
      return db.rpc('save_standalone_catalog',{p_body:input,p_key:rowKey,p_correlation:correlation});

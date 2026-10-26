@@ -64,3 +64,6 @@ Ny create-only API-batch1–10 artiklar, full inputvalidering, originalnyckel→
 
 ## 2026-10-26 — Katalog035–038
 MFA/tenant-skyddad read-pagination/sökning över hela standalone-registret installerad som20261026180352, gammal listRPC kvar. OpenAPI/genererade typer synkade. Hosted207rader/5sidor/unikhet/ordning/literalquery/tenant/MFA/limits/read-only PASS och8cleanupnollor. API33 tester/build PASS. Se CATALOG-E2E-038 för avgränsningar; full Auth/browser-P0 ej verifierad.
+
+## 2026-10-26 — Explicit testpublicering039–041
+Källartikel kan kopieras en gång till testprodukt+barcode+kundpris för ett enda aktivt testkundkonto. Fryst snapshot, sourceversion, SQL mode/test/MFA/tenant/eligibility, commands/audit atomiskt. Migration20261026182456 tillämpad. Gate enabled inför API-deploy efter hosted actual-RPC källa→publish→barcode→prepare→confirm PASS, total30863öre och inga dubbleffekter. Prod/kundspärr/tenant/MFA/stale/replay assertions PASS.20cleanup0. API35/web52 kodtester PASS; se TEST-CATALOG-E2E-041. Inget permanent konto skapat.

@@ -535,6 +535,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/standalone-catalog/{item_id}/test-publication": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Explicit create-only immutable snapshot for one active test customer. Each source item can be published once total. No production mode, credit change, invoice or inventory effect. Requires admin catalog permission and current MFA. */
+        post: operations["publishCatalogTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1071,7 +1088,7 @@ export interface components {
             name: string;
             organization_number: string;
             /** @enum {string} */
-            status: "suspended";
+            status: "pending" | "active" | "suspended";
             /** @enum {boolean} */
             purchase_blocked: true;
             /** @enum {string} */
@@ -1126,6 +1143,26 @@ export interface components {
             authority: "standalone-preparation";
             /** @enum {boolean} */
             checkout_enabled: false;
+        };
+        CatalogTestPublicationInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            version: number;
+            /** Format: uuid */
+            customer_account_id: string;
+        };
+        CatalogTestPublication: {
+            /** Format: uuid */
+            product_id: string;
+            /** Format: uuid */
+            source_item_id: string;
+            source_version: number;
+            /** Format: uuid */
+            customer_account_id: string;
+            /** @enum {string} */
+            mode: "test";
+            unit_price_minor: string;
+            vat_bps: number;
         };
     };
     responses: never;
@@ -4274,6 +4311,71 @@ export interface operations {
                 content?: never;
             };
             /** @description Catalog unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    publishCatalogTest: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogTestPublicationInput"];
+            };
+        };
+        responses: {
+            /** @description Created or replayed test snapshot */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["CatalogTestPublication"];
+                    };
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description MFA or permission denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Version, duplicate, account eligibility or mode conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Feature unavailable */
             503: {
                 headers: {
                     [name: string]: unknown;

@@ -1,0 +1,15 @@
+# CATALOG-TEST-PUBLISH-039 — Skapa testartikel från registerversion
+
+Ny `public.publish_catalog_test(p_tenant uuid,p_item uuid,p_version integer,p_account uuid,p_key text,p_correlation uuid)` skapar en snapshot i testadaptern. DTO `{product_id,customer_account_id,source_item_id,source_version,mode:"test",unit_price_minor:string,vat_bps}`. Återförsök med samma actor/tenant/key och exakt samma kommando returnerar sparat DTO även om källan ändrats senare. Aktuell MFA, catalog.admin-auktorisering, merchant mode=test och kontots tenant kontrolleras fortfarande före replay.
+
+En källartikel kan publiceras en gång, för exakt ett kundkonto. Ingen uppdatering av befintlig testartikel eller fler kundpriser. Annan nyckel med samma källa ger CATALOG_DUPLICATE; fel version ger först VERSION_CONFLICT. SKU-/streckkodskollisioner ger CATALOG_DUPLICATE och transaktionen rullas tillbaka. Det nya produkt-ID:t skapas slumpmässigt. Källa måste vara aktiv och självskanning tillåten; streckkod kopieras om den finns, annars används manuell sökning. Exakta heltalsörespris och momssats kopieras till testpris med revision1.
+
+Låsordning: merchant FOR SHARE (production => INTEGRATION_NOT_READY), kundkonto FOR UPDATE (fel tenant => NOT_FOUND; ej active, purchase_blocked eller saknad terms_version => CREDIT_UNAVAILABLE), samma tenant-advisory-lock som registerredigering, källa FOR SHARE. Inga produktlås tas före kontolåset. Funktionen rör aldrig kredit, medlemskap, produktionsläge eller kundaktivering. Privata publications har RLS och inga direkta auth-grants. Public wrapper är invoker och privat definer har tom search_path; execute ges bara authenticated efter explicita revoke. Audit+commands operation catalog.test.publish.
+
+API-integration: POST /v1/standalone-catalog/:itemId/test-publication, path UUID valideras separat, body `testPublicationInput` tar strikt `{tenant_id,version,customer_account_id}`. Befintligt getUser, Idempotency-Key och correlation används. RPC args p_tenant:input.tenant_id,p_item:pathId,p_version:input.version,p_account:input.customer_account_id,p_key:key,p_correlation:correlation. CATALOG_TEST_PUBLICATION_ENABLED gate ska hållas stängd tills migration och riktiga SQL-rolltester verifierats.
+
+Migration CLI-skapad `20261026182456_catalog_test_publication.sql`. Två riktade inputtester PASS. Ingen hosted apply, routeändring, build eller publicering gjord av delagenten. SQL E2E inklusive snapshot till prepare/confirm och replay verifieras separat av testagenten. Detta öppnar endast explicit testpublicering, inte verklig försäljning.
+
+Kundkontot måste redan vara aktivt, köpöppet och ha terms_version. Detta kontrolleras i SQL efter kontolåset, även före replay. Funktionen aktiverar inget konto och ändrar varken kreditram eller exponering. Positiv kredit krävs inte för själva publiceringen; befintlig prepare/confirm hanterar köpgränserna.
+
+Parent2026-10-26: migrationen tillämpad som20261026182456. Hosted SQL-E2E040 PASS och20cleanupnollor. API-gate CATALOG_TEST_PUBLICATION_ENABLED=true inför nästa deployment. Ingen production-försäljning aktiverad.

@@ -4313,6 +4313,80 @@
           }
         }
       }
+    },
+    "/v1/standalone-catalog/{item_id}/test-publication": {
+      "post": {
+        "operationId": "publishCatalogTest",
+        "description": "Explicit create-only immutable snapshot for one active test customer. Each source item can be published once total. No production mode, credit change, invoice or inventory effect. Requires admin catalog permission and current MFA.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogTestPublicationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Created or replayed test snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/CatalogTestPublication"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Authentication required"
+          },
+          "403": {
+            "description": "MFA or permission denied"
+          },
+          "409": {
+            "description": "Version, duplicate, account eligibility or mode conflict"
+          },
+          "503": {
+            "description": "Feature unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6441,6 +6515,8 @@
           "status": {
             "type": "string",
             "enum": [
+              "pending",
+              "active",
               "suspended"
             ]
           },
@@ -6669,6 +6745,71 @@
             "enum": [
               false
             ]
+          }
+        }
+      },
+      "CatalogTestPublicationInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenant_id",
+          "version",
+          "customer_account_id"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "CatalogTestPublication": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "source_item_id",
+          "source_version",
+          "customer_account_id",
+          "mode",
+          "unit_price_minor",
+          "vat_bps"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_item_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version": {
+            "type": "integer"
+          },
+          "customer_account_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "test"
+            ]
+          },
+          "unit_price_minor": {
+            "type": "string"
+          },
+          "vat_bps": {
+            "type": "integer"
           }
         }
       }
