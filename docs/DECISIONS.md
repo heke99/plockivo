@@ -15,3 +15,6 @@
 D010: Sparad korg ägs av personen och inköpssammanhanget. Versionskonflikter får inte skriva över en annan flik. En korgversion ger ett underlag; redigering invaliderar gammalt underlag atomiskt. Accepterat köp kräver ny korgidentitet.
 
 D011: MFA-005 använder Supabase TOTP. MFA verkställs i SQL mot aktuella faktorer och levande aal2-session, inte bara i webbgränssnittet. Mandatkravet är globalt för personen när något aktivt mandat kräver MFA. Ingen automatisk faktoråterställning eller ny administrativ permission införs.
+
+
+D012 — 2026-10-26, godkänt av produktägaren: Plockivo ska stödja två driftprofiler: fristående (egna handlarbundna register och verksamhetsregler) och ansluten (verifierad ERP-adapter). ERP är inte ett generellt krav för kundanslutning. Varje profil måste namnge auktoritet för artikel/pris, kredit, lager, order, fakturering och avstämning; ingen blandad eller tyst fallback. Nuvarande synthetic-test är fortsatt separat från båda produktionsprofilerna. Fristående register ska inte automatiskt aktivera försäljning, kredit eller fakturering.

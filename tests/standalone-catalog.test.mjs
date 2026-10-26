@@ -1,0 +1,3 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {standaloneCatalogInput} from '../src/lib/standalone-catalog-input.ts';
+const b={tenant_id:'00000000-0000-4000-8000-000000000001',id:null,version:0,sku:'A',name:'Artikel',unit:'st',quantity_step:'0.001',barcode:null,package_quantity:'1',unit_price_minor:'12345',vat_bps:2500,active:true,self_scan:false};
+test('standalone catalog preserves exact minor strings and rejects injected authority',()=>{assert.ok(standaloneCatalogInput.safeParse(b).success);for(const p of [{unit_price_minor:123.45},{unit_price_minor:'1.5'},{actor_id:b.tenant_id},{mode:'production'},{version:1},{quantity_step:'0'}])assert.equal(standaloneCatalogInput.safeParse({...b,...p}).success,false)});

@@ -1555,3 +1555,7 @@ Oklara externa utfall ska vara avstämda eller avgränsade till objekt som förb
 Butikspersonal ska kunna följa rutinen utan att muntliga improvisationer ersätter systemets kontroller.
 Kvarvarande avvikelser ska ha ansvarig, konsekvens och nästa åtgärd. En avgränsad fungerande pilot får inte beskrivas som att samtliga framtida tillval är färdiga.
 Registrera beslutet i projektets befintliga besluts- och statusdokument. Fortsätt därefter enligt den fastställda uppföljningen.
+
+
+Tillägg godkänt 2026-10-26 — fristående och ansluten drift
+Plockivo erbjuds fristående utan obligatoriskt externt ERP samt med valbar verifierad affärssystemskoppling. Fristående profil kräver egna artikel/prisregister, kundadministration, kreditregler, lagerpolicy och fakturerings-/exportflöde. Ansluten profil återanvänder samma domänregler genom explicit adapter och dokumenterad auktoritet. Befintlig testadapter är inte en produktionsprofil. Auktoritetsbyte kräver migrering/avstämning av pågående order och kreditexponering, inte endast en inställningsknapp. Se beslut D012.

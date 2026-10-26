@@ -1,0 +1,3 @@
+import {z} from 'zod';
+const quantity=z.string().regex(/^(?:0|[1-9]\d{0,5})(?:\.\d{1,6})?$/).refine(v=>Number(v)>0);
+export const standaloneCatalogInput=z.object({tenant_id:z.uuid(),id:z.uuid().nullable(),version:z.number().int().nonnegative().max(2147483646),sku:z.string().trim().min(1).max(80),name:z.string().trim().min(1).max(200),unit:z.string().trim().min(1).max(30),quantity_step:quantity,barcode:z.string().trim().min(1).max(100).nullable(),package_quantity:quantity,unit_price_minor:z.string().regex(/^(0|[1-9]\d{0,11})$/),vat_bps:z.number().int().min(0).max(10000),active:z.boolean(),self_scan:z.boolean()}).strict().refine(v=>v.id!==null||v.version===0);

@@ -469,6 +469,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/standalone-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listStandaloneCatalog"];
+        put?: never;
+        post: operations["saveStandaloneCatalog"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchant-customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listMerchantCustomers"];
+        put?: never;
+        post: operations["createMerchantCustomer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -955,6 +987,63 @@ export interface components {
                 net_minor: string;
                 vat_minor: string;
             }[];
+        };
+        StandaloneCatalogInput: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            id: string | null;
+            version: number;
+            sku: string;
+            name: string;
+            unit: string;
+            quantity_step: string;
+            barcode: string | null;
+            package_quantity: string;
+            unit_price_minor: string;
+            vat_bps: number;
+            active: boolean;
+            self_scan: boolean;
+        };
+        StandaloneCatalogItem: {
+            /** Format: uuid */
+            tenant_id: string;
+            /** Format: uuid */
+            id: string;
+            version: number;
+            sku: string;
+            name: string;
+            unit: string;
+            quantity_step: string;
+            barcode: string | null;
+            package_quantity: string;
+            unit_price_minor: string;
+            vat_bps: number;
+            active: boolean;
+            self_scan: boolean;
+        };
+        StandaloneCatalogList: {
+            /** @enum {string} */
+            authority: "standalone-preparation";
+            /** @enum {boolean} */
+            checkout_enabled: false;
+            items: components["schemas"]["StandaloneCatalogItem"][];
+        };
+        MerchantCustomer: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            tenant_id: string;
+            name: string;
+            organization_number: string;
+            /** @enum {string} */
+            status: "suspended";
+            /** @enum {boolean} */
+            purchase_blocked: true;
+            /** @enum {string} */
+            credit_limit_minor: "0";
+            /** @enum {string} */
+            verification_status: "unverified";
         };
     };
     responses: never;
@@ -3827,6 +3916,157 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Error"];
                 };
+            };
+        };
+    };
+    listStandaloneCatalog: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description MFA-authorized merchant profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["StandaloneCatalogList"];
+                    };
+                };
+            };
+            /** @description Preparation register unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    saveStandaloneCatalog: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StandaloneCatalogInput"];
+            };
+        };
+        responses: {
+            /** @description Saved or replayed preparation item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["StandaloneCatalogItem"];
+                    };
+                };
+            };
+            /** @description Version or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Preparation register unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    listMerchantCustomers: {
+        parameters: {
+            query: {
+                tenant_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description MFA-authorized merchant profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["MerchantCustomer"][];
+                    };
+                };
+            };
+            /** @description Preparation register unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createMerchantCustomer: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** Format: uuid */
+                    tenant_id: string;
+                    name: string;
+                    organization_number: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved or replayed preparation item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data?: components["schemas"]["MerchantCustomer"];
+                    };
+                };
+            };
+            /** @description Version or idempotency conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Preparation register unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

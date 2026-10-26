@@ -54,3 +54,7 @@ Exakt mandatmigration godkänd av användaren, tillämpad som20261025231731_memb
 ## Fyra teststeg 019–022 — 2026-10-26
 
 Varukontroll och beständigt claim/confirm samt returmottagning implementerade med SQL-mode=test spärr, aktuellt MFA och separata permissions. Core04427/returns04455 tillämpade, riktiga SQL-rolltester PASS med rollback. Annullering förberedd i pending04633, hosted apply auto-review avvisad; ingen SQL-PASS, TEST_CANCELLATION_ENABLED=false. TEST_FULFILLMENT_ENABLED=true konfigurerad för nästa API deployment endast för syntetiska testorder. Inga fysiska eller ekonomiska effekter öppnade. API verify20 tester/build PASS, webb verify28/build PASS. UI-only Chromium fyra flöden+gated503/mobil PASS, separat SQL auth-bevis. Ingen verklig samtidig sessionskörning; måste verifieras före pilot. Ingen automatisk frigöring av oklara claims, ingen retur→kredit.
+
+## Fristående och ansluten drift — 2026-10-26
+
+D012 och masterplanstillägg godkända: inget generellt ERP-krav. Standalone artikel/pris-preparationsregister024 implementerat men hosted migration auto-review avvisad, SQL ej verifierad, gatefalse. Kundadministration025 migration20261026010357 tillämpad och riktig SQL-rollmatris PASS; gate STANDALONE_CUSTOMERS_ENABLED=true konfigurerad nästa deploy. Nya konton suspended/purchaseblocked/zero credit, inga mandat. API verify25 tester/build PASS. Ingen produktionsförsäljning öppnad eller kredit beviljad. Register innebär inte färdig fristående checkout.

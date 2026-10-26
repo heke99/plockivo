@@ -3938,6 +3938,213 @@
         ],
         "summary": "Read cumulative synthetic billing underlay; never an invoice"
       }
+    },
+    "/v1/standalone-catalog": {
+      "get": {
+        "operationId": "listStandaloneCatalog",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MFA-authorized merchant profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StandaloneCatalogList"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Preparation register unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "saveStandaloneCatalog",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StandaloneCatalogInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved or replayed preparation item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/StandaloneCatalogItem"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or idempotency conflict"
+          },
+          "503": {
+            "description": "Preparation register unavailable"
+          }
+        }
+      }
+    },
+    "/v1/merchant-customers": {
+      "get": {
+        "operationId": "listMerchantCustomers",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "MFA-authorized merchant profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MerchantCustomer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Preparation register unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createMerchantCustomer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "tenant_id",
+                  "name",
+                  "organization_number"
+                ],
+                "properties": {
+                  "tenant_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 160
+                  },
+                  "organization_number": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved or replayed preparation item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/MerchantCustomer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or idempotency conflict"
+          },
+          "503": {
+            "description": "Preparation register unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5856,6 +6063,236 @@
                 }
               }
             }
+          }
+        }
+      },
+      "StandaloneCatalogInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenant_id",
+          "id",
+          "version",
+          "sku",
+          "name",
+          "unit",
+          "quantity_step",
+          "barcode",
+          "package_quantity",
+          "unit_price_minor",
+          "vat_bps",
+          "active",
+          "self_scan"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "quantity_step": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "package_quantity": {
+            "type": "string"
+          },
+          "unit_price_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "vat_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "self_scan": {
+            "type": "boolean"
+          }
+        }
+      },
+      "StandaloneCatalogItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tenant_id",
+          "id",
+          "version",
+          "sku",
+          "name",
+          "unit",
+          "quantity_step",
+          "barcode",
+          "package_quantity",
+          "unit_price_minor",
+          "vat_bps",
+          "active",
+          "self_scan"
+        ],
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "quantity_step": {
+            "type": "string"
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          },
+          "package_quantity": {
+            "type": "string"
+          },
+          "unit_price_minor": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,11})$"
+          },
+          "vat_bps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "self_scan": {
+            "type": "boolean"
+          }
+        }
+      },
+      "StandaloneCatalogList": {
+        "type": "object",
+        "required": [
+          "authority",
+          "checkout_enabled",
+          "items"
+        ],
+        "properties": {
+          "authority": {
+            "type": "string",
+            "enum": [
+              "standalone-preparation"
+            ]
+          },
+          "checkout_enabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StandaloneCatalogItem"
+            }
+          }
+        }
+      },
+      "MerchantCustomer": {
+        "type": "object",
+        "required": [
+          "id",
+          "tenant_id",
+          "name",
+          "organization_number",
+          "status",
+          "purchase_blocked",
+          "credit_limit_minor",
+          "verification_status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "organization_number": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "suspended"
+            ]
+          },
+          "purchase_blocked": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "credit_limit_minor": {
+            "type": "string",
+            "enum": [
+              "0"
+            ]
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "unverified"
+            ]
           }
         }
       }
